@@ -1,0 +1,44 @@
+# Local-only competition strategy — NEVER commit
+competition-local/
+system-decisions/
+system-flow/
+AGENTS.md
+
+# Local binaries (temporal CLI etc.)
+.tools/
+
+# Generated corpus PDFs (regenerate via corpus/generate.mjs)
+corpus/pdfs/
+
+# Local-only working docs
+*.local.md
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+
+# Env and secrets
+.env
+.env.*
+!.env.example
+
+# Logs and OS
+*.log
+.DS_Store
+Thumbs.db
+
+# Python (pipeline tooling)
+__pycache__/
+.venv/
+venv/
+
+# Temp
+tmp/
+*.tmp
+
+# Generated holdout PDFs (regenerate via corpus/generate.mjs)
+eval/holdout/pdfs/

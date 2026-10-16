@@ -1,0 +1,18 @@
+{
+  "name": "tickler",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "An agent that reads your leases, remembers the deadlines hiding in them, and never lets one slip.",
+  "scripts": {
+    "hello:falkordb": "node scripts/hello-falkordb.mjs",
+    "hello:model": "node --env-file=.env scripts/hello-groq.mjs",
+    "temporal:dev": "temporal server start-dev",
+    "hello:temporal": "node worker/hello-client.mjs",
+    "hello:all": "npm run hello:falkordb && npm run hello:model && npm run hello:temporal"
+  },
+  "dependencies": {
+    "falkordb": "^6.0.0",
+    "pdf-lib": "^1.17.1"
+  }
+}
