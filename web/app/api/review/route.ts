@@ -26,7 +26,7 @@ export async function POST(req: Request) {
         leaseId: string; deadlineType: string; deadlineDate: string;
         steps: Array<{ reminderId: string; leadMs: number; delayMs: number }>;
       }>;
-      const client = new Client({ address: process.env.TEMPORAL_ADDRESS ?? "localhost:7233" });
+      const client = new Client();
       for (const spec of specs) {
         await client.workflow.start("DeadlineReminderWorkflow", {
           taskQueue: "tickler",
