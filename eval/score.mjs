@@ -1,12 +1,16 @@
-// Score extraction runs against gold answers. Dev set only until Phase 7.
-// Usage: node --env-file=.env eval/score.mjs [runDir]
-//   runDir defaults to latest in eval/runs/ (written by pipeline/extract.mjs --all-dev)
+// Score extraction runs against gold answers.
+// Usage: node --env-file=.env eval/score.mjs [runDir] [--gold <path>] [--extracted <path>]
+//   defaults: latest eval/runs/<ts> vs eval/gold.json (dev set)
+//   holdout:  --gold eval/holdout/gold-holdout.json --extracted eval/holdout/extracted.json
 import { readFileSync, readdirSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const gold = JSON.parse(readFileSync(join(ROOT, 'eval', 'gold.json'), 'utf8')).leases;
+const argv = process.argv.slice(2);
+const opt = name => { const i = argv.indexOf(`--${name}`); return i >= 0 ? argv[i + 1] : null; };
+const goldPath = opt('gold') ?? join(ROOT, 'eval', 'gold.json');
+const gold = JSON.parse(readFileSync(resolve(goldPath), 'utf8')).leases;
 
 const norm = s => String(s ?? '').trim();
 const num = v => { const n = parseFloat(String(v ?? '').replace(/[$,%\s,]/g, '')); return Number.isFinite(n) ? n : null; };
@@ -61,13 +65,22 @@ function deadlineScore(out, g) {
 }
 
 const runsDir = join(ROOT, 'eval', 'runs');
-let runDir = process.argv[2];
-if (!runDir) {
-  const runs = readdirSync(runsDir).filter(d => existsSync(join(runsDir, d, 'extracted.json'))).sort();
-  if (!runs.length) { console.error('no runs found in eval/runs — run pipeline/extract.mjs --all-dev first'); process.exit(1); }
-  runDir = join(runsDir, runs.at(-1));
+const extractedPath = opt('extracted');
+let runDir;
+let extracted;
+if (extractedPath) {
+  runDir = dirname(resolve(extractedPath));
+  extracted = JSON.parse(readFileSync(resolve(extractedPath), 'utf8'));
+} else {
+  let runArg = argv.find(a => !a.startsWith('--') && a !== opt('gold'));
+  if (!runArg) {
+    const runs = readdirSync(runsDir).filter(d => existsSync(join(runsDir, d, 'extracted.json'))).sort();
+    if (!runs.length) { console.error('no runs found in eval/runs — run pipeline/extract.mjs --all-dev first'); process.exit(1); }
+    runArg = runs.at(-1);
+  }
+  runDir = existsSync(runArg) && !runArg.includes('json') ? runArg : join(runsDir, runArg);
+  extracted = JSON.parse(readFileSync(join(runDir, 'extracted.json'), 'utf8'));
 }
-const extracted = JSON.parse(readFileSync(join(runDir, 'extracted.json'), 'utf8'));
 
 let fOk = 0, fTotal = 0, dOk = 0, dTotal = 0, latency = 0, tokens = 0;
 const perLease = [];
