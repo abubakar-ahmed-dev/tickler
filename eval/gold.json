@@ -1,0 +1,304 @@
+{
+  "comment": "Dev-set gold answers, derived from corpus/profiles.json by construction. Tune prompts against this set only.",
+  "leases": [
+    {
+      "id": "lease-01",
+      "fields": {
+        "term_start": "2027-03-01",
+        "term_end": "2028-02-29",
+        "monthly_rent": 1500,
+        "deposit": 1500,
+        "deposit_return_days": 21,
+        "notice_days": 60,
+        "esc_variant": "anniversary",
+        "esc_pct": 3,
+        "late_fee_amount": 50,
+        "late_grace_days": 5
+      },
+      "deadlines": [
+        {
+          "type": "term_end",
+          "date": "2028-02-29",
+          "needs_review": false
+        },
+        {
+          "type": "notice",
+          "date": "2027-12-31",
+          "needs_review": false
+        },
+        {
+          "type": "deposit_return",
+          "date": "2028-03-21",
+          "needs_review": false
+        }
+      ]
+    },
+    {
+      "id": "lease-02",
+      "fields": {
+        "term_start": "2027-05-01",
+        "term_end": "2027-10-31",
+        "monthly_rent": 1200,
+        "deposit": 1200,
+        "deposit_return_days": 30,
+        "notice_days": 30,
+        "esc_variant": "none",
+        "esc_pct": null,
+        "late_fee_amount": 35,
+        "late_grace_days": 3
+      },
+      "deadlines": [
+        {
+          "type": "term_end",
+          "date": "2027-10-31",
+          "needs_review": false
+        },
+        {
+          "type": "notice",
+          "date": "2027-10-01",
+          "needs_review": false
+        },
+        {
+          "type": "deposit_return",
+          "date": "2027-11-30",
+          "needs_review": false
+        }
+      ]
+    },
+    {
+      "id": "lease-03",
+      "fields": {
+        "term_start": "2027-01-01",
+        "term_end": "2027-12-31",
+        "monthly_rent": 1800,
+        "deposit": 2400,
+        "deposit_return_days": 14,
+        "notice_days": 90,
+        "esc_variant": "fixed",
+        "esc_pct": 4,
+        "late_fee_amount": 75,
+        "late_grace_days": 5
+      },
+      "deadlines": [
+        {
+          "type": "term_end",
+          "date": "2027-12-31",
+          "needs_review": false
+        },
+        {
+          "type": "notice",
+          "date": "2027-10-02",
+          "needs_review": false
+        },
+        {
+          "type": "escalation",
+          "date": "2027-07-01",
+          "needs_review": false
+        },
+        {
+          "type": "deposit_return",
+          "date": "2028-01-14",
+          "needs_review": false
+        }
+      ]
+    },
+    {
+      "id": "lease-04",
+      "fields": {
+        "term_start": "2027-06-15",
+        "term_end": "2028-06-14",
+        "monthly_rent": 2100,
+        "deposit": 4200,
+        "deposit_return_days": 21,
+        "notice_days": 60,
+        "esc_variant": "anniversary",
+        "esc_pct": 2.5,
+        "late_fee_amount": 60,
+        "late_grace_days": 4
+      },
+      "deadlines": [
+        {
+          "type": "term_end",
+          "date": "2028-06-14",
+          "needs_review": false
+        },
+        {
+          "type": "notice",
+          "date": "2028-04-15",
+          "needs_review": false
+        },
+        {
+          "type": "deposit_return",
+          "date": "2028-07-05",
+          "needs_review": false
+        }
+      ]
+    },
+    {
+      "id": "lease-05",
+      "fields": {
+        "term_start": "2027-08-01",
+        "term_end": "2028-01-31",
+        "monthly_rent": 1450,
+        "deposit": 1450,
+        "deposit_return_days": 30,
+        "notice_days": null,
+        "esc_variant": "none",
+        "esc_pct": null,
+        "late_fee_amount": 40,
+        "late_grace_days": 5
+      },
+      "deadlines": [
+        {
+          "type": "term_end",
+          "date": "2028-01-31",
+          "needs_review": false
+        },
+        {
+          "type": "notice",
+          "date": null,
+          "needs_review": true,
+          "reason": "Notice window not quantified (\"a reasonable period of time\")"
+        },
+        {
+          "type": "deposit_return",
+          "date": "2028-03-01",
+          "needs_review": false
+        }
+      ]
+    },
+    {
+      "id": "lease-06",
+      "fields": {
+        "term_start": "2027-02-01",
+        "term_end": "2028-01-31",
+        "monthly_rent": 950,
+        "deposit": 950,
+        "deposit_return_days": 14,
+        "notice_days": 30,
+        "esc_variant": "anniversary",
+        "esc_pct": 5,
+        "late_fee_amount": 30,
+        "late_grace_days": 2
+      },
+      "deadlines": [
+        {
+          "type": "term_end",
+          "date": "2028-01-31",
+          "needs_review": false
+        },
+        {
+          "type": "notice",
+          "date": "2028-01-01",
+          "needs_review": false
+        },
+        {
+          "type": "deposit_return",
+          "date": "2028-02-14",
+          "needs_review": false
+        }
+      ]
+    },
+    {
+      "id": "lease-07",
+      "fields": {
+        "term_start": "2027-03-01",
+        "term_end": "2028-02-29",
+        "monthly_rent": 1675,
+        "deposit": 1675,
+        "deposit_return_days": 21,
+        "notice_days": 90,
+        "esc_variant": "anniversary",
+        "esc_pct": 3,
+        "late_fee_amount": 50,
+        "late_grace_days": 5
+      },
+      "deadlines": [
+        {
+          "type": "term_end",
+          "date": "2028-02-29",
+          "needs_review": false
+        },
+        {
+          "type": "notice",
+          "date": "2027-12-01",
+          "needs_review": false
+        },
+        {
+          "type": "deposit_return",
+          "date": "2028-03-21",
+          "needs_review": false
+        }
+      ]
+    },
+    {
+      "id": "lease-08",
+      "fields": {
+        "term_start": "2027-04-01",
+        "term_end": "2028-03-31",
+        "monthly_rent": 1300,
+        "deposit": 2600,
+        "deposit_return_days": 30,
+        "notice_days": 60,
+        "esc_variant": "none",
+        "esc_pct": null,
+        "late_fee_amount": 130,
+        "late_grace_days": 7
+      },
+      "deadlines": [
+        {
+          "type": "term_end",
+          "date": "2028-03-31",
+          "needs_review": false
+        },
+        {
+          "type": "notice",
+          "date": "2028-01-31",
+          "needs_review": false
+        },
+        {
+          "type": "deposit_return",
+          "date": "2028-04-30",
+          "needs_review": false
+        }
+      ]
+    },
+    {
+      "id": "lease-09",
+      "fields": {
+        "term_start": "2027-09-01",
+        "term_end": "2028-08-31",
+        "monthly_rent": 2000,
+        "deposit": 2000,
+        "deposit_return_days": 21,
+        "notice_days": 60,
+        "esc_variant": "fixed",
+        "esc_pct": 6,
+        "late_fee_amount": 80,
+        "late_grace_days": 5
+      },
+      "deadlines": [
+        {
+          "type": "term_end",
+          "date": "2028-08-31",
+          "needs_review": false
+        },
+        {
+          "type": "notice",
+          "date": "2028-07-02",
+          "needs_review": false
+        },
+        {
+          "type": "escalation",
+          "date": "2028-03-01",
+          "needs_review": false
+        },
+        {
+          "type": "deposit_return",
+          "date": "2028-09-21",
+          "needs_review": false
+        }
+      ]
+    }
+  ]
+}

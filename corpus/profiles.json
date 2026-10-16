@@ -1,0 +1,127 @@
+{
+  "comment": "12 synthetic lease profiles. Fields drive corpus/lease-template.md; gold answers are derived from these values by construction (eval/generate writes them). esc_variant: anniversary|fixed|cpi|none. notice.quantified=false => ambiguous clause => needsReview. The 3 holdout profiles MUST stay sealed until Phase 7 (see eval/holdout).",
+  "landlords": ["Marjorie Sample", "Devon Placeholder", "Priya Example", "Hollis Template", "Rosa Mock", "Fenwick Draft"],
+  "tenants": ["Jamie Testwell", "Alexa Fixture", "Sam Stagedata", "Riley Fictitious", "Morgan Draftperson", "Casey Specimen"],
+  "profiles": [
+    {
+      "id": "lease-01", "holdout": false,
+      "landlord": 0, "tenant": 0, "exec_date": "2027-02-20",
+      "address": "412 Alder Court, Unit B, Fairview",
+      "term_start": "2027-03-01", "term_end": "2028-02-29",
+      "rent": 1500, "deposit": 1500, "deposit_return_days": 21,
+      "esc_variant": "anniversary", "esc_pct": 3,
+      "notice_days": 60,
+      "late_fee_amount": 50, "late_fee_pct": null, "late_grace_days": 5
+    },
+    {
+      "id": "lease-02", "holdout": false,
+      "landlord": 1, "tenant": 1, "exec_date": "2027-04-18",
+      "address": "88 Harbor View Lane, Fairview",
+      "term_start": "2027-05-01", "term_end": "2027-10-31",
+      "rent": 1200, "deposit": 1200, "deposit_return_days": 30,
+      "esc_variant": "none", "esc_pct": null,
+      "notice_days": 30,
+      "late_fee_amount": 35, "late_fee_pct": null, "late_grace_days": 3
+    },
+    {
+      "id": "lease-03", "holdout": false,
+      "landlord": 2, "tenant": 2, "exec_date": "2026-12-15",
+      "address": "2317 Quarry Road, Fairview",
+      "term_start": "2027-01-01", "term_end": "2027-12-31",
+      "rent": 1800, "deposit": 2400, "deposit_return_days": 14,
+      "esc_variant": "fixed", "esc_pct": 4, "esc_date": "2027-07-01", "new_rent": 1872,
+      "notice_days": 90,
+      "late_fee_amount": 75, "late_fee_pct": null, "late_grace_days": 5
+    },
+    {
+      "id": "lease-04", "holdout": false,
+      "landlord": 3, "tenant": 3, "exec_date": "2027-06-01",
+      "address": "7 Larkspur Mews, Apt 3C, Fairview",
+      "term_start": "2027-06-15", "term_end": "2028-06-14",
+      "rent": 2100, "deposit": 4200, "deposit_return_days": 21,
+      "esc_variant": "anniversary", "esc_pct": 2.5,
+      "notice_days": 60,
+      "late_fee_amount": 60, "late_fee_pct": null, "late_grace_days": 4
+    },
+    {
+      "id": "lease-05", "holdout": false,
+      "landlord": 4, "tenant": 4, "exec_date": "2027-07-22",
+      "address": "950 Foxglove Terrace, Fairview",
+      "term_start": "2027-08-01", "term_end": "2028-01-31",
+      "rent": 1450, "deposit": 1450, "deposit_return_days": 30,
+      "esc_variant": "none", "esc_pct": null,
+      "notice_days": null,
+      "late_fee_amount": 40, "late_fee_pct": null, "late_grace_days": 5
+    },
+    {
+      "id": "lease-06", "holdout": false,
+      "landlord": 5, "tenant": 5, "exec_date": "2027-01-10",
+      "address": "16 Bindle Street, Rear Cottage, Fairview",
+      "term_start": "2027-02-01", "term_end": "2028-01-31",
+      "rent": 950, "deposit": 950, "deposit_return_days": 14,
+      "esc_variant": "anniversary", "esc_pct": 5,
+      "notice_days": 30,
+      "late_fee_amount": 30, "late_fee_pct": null, "late_grace_days": 2
+    },
+    {
+      "id": "lease-07", "holdout": false,
+      "landlord": 0, "tenant": 2, "exec_date": "2027-02-24",
+      "address": "3301 Milldam Circle, Fairview",
+      "term_start": "2027-03-01", "term_end": "2028-02-29",
+      "rent": 1675, "deposit": 1675, "deposit_return_days": 21,
+      "esc_variant": "anniversary", "esc_pct": 3,
+      "notice_days": 90,
+      "late_fee_amount": 50, "late_fee_pct": null, "late_grace_days": 5
+    },
+    {
+      "id": "lease-08", "holdout": false,
+      "landlord": 1, "tenant": 3, "exec_date": "2027-03-28",
+      "address": "455 Torchgate Avenue, Apt 12, Fairview",
+      "term_start": "2027-04-01", "term_end": "2028-03-31",
+      "rent": 1300, "deposit": 2600, "deposit_return_days": 30,
+      "esc_variant": "none", "esc_pct": null,
+      "notice_days": 60,
+      "late_fee_amount": 130, "late_fee_pct": 10, "late_grace_days": 7
+    },
+    {
+      "id": "lease-09", "holdout": false,
+      "landlord": 2, "tenant": 4, "exec_date": "2027-08-20",
+      "address": "1222 Kestrel Hollow, Fairview",
+      "term_start": "2027-09-01", "term_end": "2028-08-31",
+      "rent": 2000, "deposit": 2000, "deposit_return_days": 21,
+      "esc_variant": "fixed", "esc_pct": 6, "esc_date": "2028-03-01", "new_rent": 2120,
+      "notice_days": 60,
+      "late_fee_amount": 80, "late_fee_pct": null, "late_grace_days": 5
+    },
+    {
+      "id": "lease-10", "holdout": true,
+      "landlord": 3, "tenant": 0, "exec_date": "2027-06-12",
+      "address": "61 Ossuary Lane, Guest House, Fairview",
+      "term_start": "2027-07-01", "term_end": "2028-06-30",
+      "rent": 1550, "deposit": 1550, "deposit_return_days": 30,
+      "esc_variant": "cpi", "esc_pct": null,
+      "notice_days": 90,
+      "late_fee_amount": 45, "late_fee_pct": null, "late_grace_days": 5
+    },
+    {
+      "id": "lease-11", "holdout": true,
+      "landlord": 4, "tenant": 1, "exec_date": "2027-09-15",
+      "address": "8 Vellum Way, Unit 202, Fairview",
+      "term_start": "2027-10-01", "term_end": "2028-09-30",
+      "rent": 1725, "deposit": 1725, "deposit_return_days": 21,
+      "esc_variant": "anniversary", "esc_pct": 3,
+      "notice_days": 30,
+      "late_fee_amount": 55, "late_fee_pct": null, "late_grace_days": 3
+    },
+    {
+      "id": "lease-12", "holdout": true,
+      "landlord": 5, "tenant": 2, "exec_date": "2027-10-18",
+      "address": "773 Gridiron Street, Fairview",
+      "term_start": "2027-11-01", "term_end": "2028-10-31",
+      "rent": 1875, "deposit": 1875, "deposit_return_days": 14,
+      "esc_variant": "fixed", "esc_pct": 3.5, "esc_date": "2028-05-01", "new_rent": 1941,
+      "notice_days": 60,
+      "late_fee_amount": 65, "late_fee_pct": null, "late_grace_days": 5
+    }
+  ]
+}

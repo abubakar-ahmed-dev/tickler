@@ -1,0 +1,112 @@
+{
+  "comment": "SEALED — open only in Phase 7. Run once, record results, no retuning.",
+  "leases": [
+    {
+      "id": "lease-10",
+      "fields": {
+        "term_start": "2027-07-01",
+        "term_end": "2028-06-30",
+        "monthly_rent": 1550,
+        "deposit": 1550,
+        "deposit_return_days": 30,
+        "notice_days": 90,
+        "esc_variant": "cpi",
+        "esc_pct": null,
+        "late_fee_amount": 45,
+        "late_grace_days": 5
+      },
+      "deadlines": [
+        {
+          "type": "term_end",
+          "date": "2028-06-30",
+          "needs_review": false
+        },
+        {
+          "type": "notice",
+          "date": "2028-04-01",
+          "needs_review": false
+        },
+        {
+          "type": "escalation",
+          "date": null,
+          "needs_review": true,
+          "reason": "Escalation unquantified (CPI-indexed)"
+        },
+        {
+          "type": "deposit_return",
+          "date": "2028-07-30",
+          "needs_review": false
+        }
+      ]
+    },
+    {
+      "id": "lease-11",
+      "fields": {
+        "term_start": "2027-10-01",
+        "term_end": "2028-09-30",
+        "monthly_rent": 1725,
+        "deposit": 1725,
+        "deposit_return_days": 21,
+        "notice_days": 30,
+        "esc_variant": "anniversary",
+        "esc_pct": 3,
+        "late_fee_amount": 55,
+        "late_grace_days": 3
+      },
+      "deadlines": [
+        {
+          "type": "term_end",
+          "date": "2028-09-30",
+          "needs_review": false
+        },
+        {
+          "type": "notice",
+          "date": "2028-08-31",
+          "needs_review": false
+        },
+        {
+          "type": "deposit_return",
+          "date": "2028-10-21",
+          "needs_review": false
+        }
+      ]
+    },
+    {
+      "id": "lease-12",
+      "fields": {
+        "term_start": "2027-11-01",
+        "term_end": "2028-10-31",
+        "monthly_rent": 1875,
+        "deposit": 1875,
+        "deposit_return_days": 14,
+        "notice_days": 60,
+        "esc_variant": "fixed",
+        "esc_pct": 3.5,
+        "late_fee_amount": 65,
+        "late_grace_days": 5
+      },
+      "deadlines": [
+        {
+          "type": "term_end",
+          "date": "2028-10-31",
+          "needs_review": false
+        },
+        {
+          "type": "notice",
+          "date": "2028-09-01",
+          "needs_review": false
+        },
+        {
+          "type": "escalation",
+          "date": "2028-05-01",
+          "needs_review": false
+        },
+        {
+          "type": "deposit_return",
+          "date": "2028-11-14",
+          "needs_review": false
+        }
+      ]
+    }
+  ]
+}
