@@ -48,6 +48,26 @@ MATCH (l:Lease {id:$id}) CREATE (l)-[:HAS_PAGE]->(:Page {idx:$idx, text:$text})
 MATCH (l:Lease {id:$id}) SET l.status='parsed'
 ```
 
+## 7. Extraction writes (`pipeline/extract.mjs`)
+```cypher
+-- wipe prior extraction (re-extract = idempotent)
+MATCH (l:Lease {id:$id})-[:HAS_CLAUSE]->(c:Clause)
+OPTIONAL MATCH (c)-[:GROUNDS]->(q:Quote), (c)-[:YIELDS]->(f:Field), (c)-[:DERIVES]->(d:Deadline)
+DETACH DELETE q, f, d, c
+
+-- clause + grounded field (quote validated against page text in code first)
+MATCH (l:Lease {id:$id}) CREATE (l)-[:HAS_CLAUSE]->(:Clause {type:$type, status:'extracted'})
+MATCH (c) WHERE id(c)=$cid
+  CREATE (c)-[:YIELDS]->(:Field {key:$key, value:$value, confidence:$conf, approved:false})
+MATCH (c) WHERE id(c)=$cid
+  MATCH (:Lease {id:$lease})-[:HAS_PAGE]->(p:Page {idx:$page})
+  CREATE (c)-[:GROUNDS]->(:Quote {text:$text, pageIdx:$page})-[:FROM_PAGE]->(p)
+
+-- deadline derived from its clause (date computed in code, not by the model)
+MATCH (l:Lease {id:$id})-[:HAS_CLAUSE]->(c:Clause {type:$ct})
+  CREATE (c)-[:DERIVES]->(:Deadline {type:$type, date:$date, needsReview:$nr, reason:$reason})
+```
+
 ---
 
 *This file grows as queries land in Phases 2–5. Every query the product depends on must appear here.*

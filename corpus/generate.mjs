@@ -80,7 +80,10 @@ function goldFor(p) {
     monthly_rent: p.rent, deposit: p.deposit,
     deposit_return_days: p.deposit_return_days,
     notice_days: p.notice_days, // null = ambiguous clause
-    esc_variant: p.esc_variant, esc_pct: p.esc_pct,
+    esc_variant: p.esc_variant,
+    // only 'anniversary' leases state a percentage in prose; 'fixed' states the new
+    // rent only — the doc omits the %, so gold must expect 'unknown' there
+    esc_pct: p.esc_variant === 'anniversary' ? p.esc_pct : null,
     late_fee_amount: p.late_fee_amount, late_grace_days: p.late_grace_days,
   };
   const deadlines = [];

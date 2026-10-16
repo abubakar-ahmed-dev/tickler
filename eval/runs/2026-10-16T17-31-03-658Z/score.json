@@ -1,0 +1,81 @@
+{
+  "run": "C:\\Users\\Admin\\Desktop\\FAST\\projects\\tickler\\eval\\runs\\2026-10-16T17-31-03-658Z",
+  "fieldAccuracy": "99/99 = 100.0%",
+  "deadlineAccuracy": "29/29 = 100.0%",
+  "avgLatencyMs": 25420,
+  "avgTokensPerLease": 3918,
+  "perLease": [
+    {
+      "id": "lease-01",
+      "fields": "11/11",
+      "deadlines": "3/3",
+      "fieldMisses": [],
+      "deadlineMisses": [],
+      "ungrounded": []
+    },
+    {
+      "id": "lease-02",
+      "fields": "11/11",
+      "deadlines": "3/3",
+      "fieldMisses": [],
+      "deadlineMisses": [],
+      "ungrounded": []
+    },
+    {
+      "id": "lease-03",
+      "fields": "11/11",
+      "deadlines": "4/4",
+      "fieldMisses": [],
+      "deadlineMisses": [],
+      "ungrounded": []
+    },
+    {
+      "id": "lease-04",
+      "fields": "11/11",
+      "deadlines": "3/3",
+      "fieldMisses": [],
+      "deadlineMisses": [],
+      "ungrounded": []
+    },
+    {
+      "id": "lease-05",
+      "fields": "11/11",
+      "deadlines": "3/3",
+      "fieldMisses": [],
+      "deadlineMisses": [],
+      "ungrounded": []
+    },
+    {
+      "id": "lease-06",
+      "fields": "11/11",
+      "deadlines": "3/3",
+      "fieldMisses": [],
+      "deadlineMisses": [],
+      "ungrounded": []
+    },
+    {
+      "id": "lease-07",
+      "fields": "11/11",
+      "deadlines": "3/3",
+      "fieldMisses": [],
+      "deadlineMisses": [],
+      "ungrounded": []
+    },
+    {
+      "id": "lease-08",
+      "fields": "11/11",
+      "deadlines": "3/3",
+      "fieldMisses": [],
+      "deadlineMisses": [],
+      "ungrounded": []
+    },
+    {
+      "id": "lease-09",
+      "fields": "11/11",
+      "deadlines": "4/4",
+      "fieldMisses": [],
+      "deadlineMisses": [],
+      "ungrounded": []
+    }
+  ]
+}
