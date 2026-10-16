@@ -48,6 +48,46 @@ MATCH (l:Lease {id:$id}) CREATE (l)-[:HAS_PAGE]->(:Page {idx:$idx, text:$text})
 MATCH (l:Lease {id:$id}) SET l.status='parsed'
 ```
 
+## 7. Extraction writes (`pipeline/extract.mjs`)
+```cypher
+-- wipe prior extraction (re-extract = idempotent)
+MATCH (l:Lease {id:$id})-[:HAS_CLAUSE]->(c:Clause)
+OPTIONAL MATCH (c)-[:GROUNDS]->(q:Quote), (c)-[:YIELDS]->(f:Field), (c)-[:DERIVES]->(d:Deadline)
+DETACH DELETE q, f, d, c
+
+-- clause + grounded field (quote validated against page text in code first)
+MATCH (l:Lease {id:$id}) CREATE (l)-[:HAS_CLAUSE]->(:Clause {type:$type, status:'extracted'})
+MATCH (c) WHERE id(c)=$cid
+  CREATE (c)-[:YIELDS]->(:Field {key:$key, value:$value, confidence:$conf, approved:false})
+MATCH (c) WHERE id(c)=$cid
+  MATCH (:Lease {id:$lease})-[:HAS_PAGE]->(p:Page {idx:$page})
+  CREATE (c)-[:GROUNDS]->(:Quote {text:$text, pageIdx:$page})-[:FROM_PAGE]->(p)
+
+-- deadline derived from its clause (date computed in code, not by the model)
+MATCH (l:Lease {id:$id})-[:HAS_CLAUSE]->(c:Clause {type:$ct})
+  CREATE (c)-[:DERIVES]->(:Deadline {type:$type, date:$date, needsReview:$nr, reason:$reason})
+```
+
+## 8. Reminder/alert/draft writes (`worker/activities.mjs`)
+```cypher
+-- arm: scheduled reminder per deadline × lead time
+MATCH (l:Lease {id:$id})-[:HAS_CLAUSE]->(:Clause)-[:DERIVES]->(d:Deadline {type:$type, date:$date})
+  CREATE (d)-[:SCHEDULED]->(:Reminder {id:$rid, leadMs:$lead, fireAt:$at, state:'scheduled'})
+
+-- timer fired: Watcher decision becomes an alert on the deadline
+MATCH (d:Deadline {type:$type, date:$date}) CREATE (a:Alert {level, message, action, reason})-[:ABOUT]->(d)
+
+-- escalation: handoff edge + pending draft citing the clause's quotes
+MATCH (a) WHERE id(a)=$aid
+  CREATE (d:Draft {kind:'notice_letter', body:$body, status:'pending'}) CREATE (a)-[:TRIGGERED]->(d)
+  WITH d UNWIND $quotes AS qtext MATCH (q:Quote {text:qtext}) CREATE (d)-[:CITES]->(q)
+
+-- human approval: corrections recorded, fields approved
+MATCH (l:Lease {id:$id})-[:HAS_CLAUSE]->(:Clause)-[:YIELDS]->(f:Field {key:$key})
+  SET f.value=$val, f.correctedByHuman=true
+  CREATE (:Correction {before:f.value, after:$val, at:$now})-[:EDITS]->(f)
+```
+
 ---
 
-*This file grows as queries land in Phases 2–5. Every query the product depends on must appear here.*
+*This file grows as queries land. Every query the product depends on must appear here.*

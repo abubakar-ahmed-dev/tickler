@@ -25,7 +25,7 @@ lease PDF ──► ingestion ──► FalkorDB graph ◄── Concierge agent
 
 ## Stack
 
-Next.js (UI) · Mastra (agent runtime + MCP server) · FalkorDB (graph) · Temporal (durable workflows) · Groq serving open-weight models (`openai/gpt-oss-20b`, `openai/gpt-oss-120b` — Apache 2.0).
+Next.js (UI) · OpenAI-compatible tool loop + MCP server (the Concierge agent) · FalkorDB (graph) · Temporal (durable workflows) · Groq serving open-weight models (`openai/gpt-oss-20b`, `openai/gpt-oss-120b` — Apache 2.0).
 
 ## Setup
 
@@ -56,3 +56,16 @@ node worker/hello-client.mjs       # durable hello-timer (~5s)
 ## Status
 
 Work in progress — ingestion and extraction phases building now. See `docs/` for the model as it lands.
+
+## Running the app
+
+```bash
+# prerequisites: FalkorDB container + Temporal dev server running (see setup above)
+cp .env web/.env.local          # Next reads env from its own directory
+cd web && npm install && npm run dev   # UI at http://localhost:3000
+
+# separate terminal — the worker that runs reminder workflows
+cd worker && npm install && node worker.mjs
+```
+
+Upload a lease PDF, review the extracted fields against their source quotes, approve, and the durable reminder chains arm themselves. The Concierge answers questions with citations; letters arrive as pending drafts only you can approve.
