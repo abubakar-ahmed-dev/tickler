@@ -81,7 +81,7 @@
         "deposit_return_days": 14,
         "notice_days": 60,
         "esc_variant": "fixed",
-        "esc_pct": 3.5,
+        "esc_pct": null,
         "late_fee_amount": 65,
         "late_grace_days": 5
       },

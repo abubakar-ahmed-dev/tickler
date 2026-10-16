@@ -3,7 +3,7 @@ competition-local/
 system-decisions/
 system-flow/
 AGENTS.md
-
+.claude
 # Local binaries (temporal CLI etc.)
 .tools/
 
