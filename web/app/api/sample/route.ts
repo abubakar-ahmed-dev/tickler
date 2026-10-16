@@ -1,7 +1,7 @@
 // POST /api/sample → load a synthetic sample lease (ingest + extract in one call).
 // Demo/onboarding path; uses the synthetic corpus, never real documents.
 import { NextResponse } from "next/server";
-import { copyFileSync, mkdirSync } from "node:fs";
+import { copyFileSync, mkdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { ingestLease } from "../../../../pipeline/ingest.mjs";
 import { extractLease } from "../../../../pipeline/extract.mjs";
