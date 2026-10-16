@@ -9,16 +9,18 @@ import { TOOL_SPECS, runTool } from './tools.mjs';
 import { graph, db } from '../pipeline/graph-write.mjs';
 
 const SESSION_USER = 'demo-user';
-const MAX_TOOL_ROUNDS = 6;
+const MAX_TOOL_ROUNDS = 8;
 
 const SYSTEM = `You are Tickler's Concierge, the agent for a lease-deadline tool used by small landlords.
 
 Non-negotiable rules:
 1. Before ANY substantive answer, call at least one tool. Never answer lease questions from memory.
-2. Every claim about lease content must carry its source: cite the verbatim quote and page number the lineage tool returned. Format citations as: (source, page N: "quoted sentence").
+2. Every claim about lease content must carry its source: cite the verbatim document quote and page number from the lineage tool's evidence entries, formatted as (source, page N: "quoted sentence"). Chain steps that merely restate the deadline (e.g. "notice on 2027-12-02") are computed values, NOT document quotes — label them "(computed)" if you reference them, and never present them as quotations.
 3. If a tool returns nothing or 'unknown', say so plainly. Never invent a date, clause, name, or preference.
 4. You draft documents, never give legal advice. If asked for legal advice, say you can't and suggest a professional.
-5. When the user states a durable fact or preference, save it with the remember tool.`;
+5. When the user states a durable fact or preference, save it with the remember tool.
+
+Tool discipline: usually 1–2 calls are enough. As soon as the tool results cover the question, STOP calling tools and write your final answer. Never call the same tool twice with the same arguments.`;
 
 const wireSpecs = TOOL_SPECS.map(s => ({
   type: 'function',
@@ -55,12 +57,13 @@ export async function ask(question, { leaseId, onEvent } = {}) {
     { role: 'user', content: question },
   ];
   const toolsUsed = [];
+  const citations = [];
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
     const { message: msg } = await groqChat(messages, { model: MODEL_FAST, tools: wireSpecs });
     messages.push(msg);
     if (!msg.tool_calls?.length) {
       await persistSession({ question, answer: msg.content, toolsUsed, leaseId });
-      return { answer: msg.content, toolsUsed };
+      return { answer: msg.content, toolsUsed, citations };
     }
     for (const tc of msg.tool_calls) {
       const name = tc.function.name;
@@ -69,6 +72,7 @@ export async function ask(question, { leaseId, onEvent } = {}) {
       onEvent?.({ type: 'tool', name, args });
       toolsUsed.push(name);
       const result = await runTool(name, args);
+      if (name === 'lineage' && result?.chain) citations.push(result);
       messages.push({ role: 'tool', tool_call_id: tc.id, content: JSON.stringify(result).slice(0, 6000) });
     }
   }
