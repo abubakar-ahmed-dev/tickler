@@ -25,7 +25,7 @@ lease PDF ──► ingestion ──► FalkorDB graph ◄── Concierge agent
 
 ## Stack
 
-Next.js (UI) · Mastra (agent runtime + MCP server) · FalkorDB (graph) · Temporal (durable workflows) · Groq serving open-weight models (`openai/gpt-oss-20b`, `openai/gpt-oss-120b` — Apache 2.0).
+Next.js (UI) · OpenAI-compatible tool loop + MCP server (the Concierge agent) · FalkorDB (graph) · Temporal (durable workflows) · Groq serving open-weight models (`openai/gpt-oss-20b`, `openai/gpt-oss-120b` — Apache 2.0).
 
 ## Setup
 
