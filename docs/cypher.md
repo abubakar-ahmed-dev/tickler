@@ -71,3 +71,27 @@ MATCH (l:Lease {id:$id})-[:HAS_CLAUSE]->(c:Clause {type:$ct})
 ---
 
 *This file grows as queries land in Phases 2–5. Every query the product depends on must appear here.*
+
+## 8. Reminder/alert/draft writes (`worker/activities.mjs`)
+```cypher
+-- arm: scheduled reminder per deadline × lead time
+MATCH (l:Lease {id:$id})-[:HAS_CLAUSE]->(:Clause)-[:DERIVES]->(d:Deadline {type:$type, date:$date})
+  CREATE (d)-[:SCHEDULED]->(:Reminder {id:$rid, leadMs:$lead, fireAt:$at, state:'scheduled'})
+
+-- timer fired: Watcher decision becomes an alert on the deadline
+MATCH (d:Deadline {type:$type, date:$date}) CREATE (a:Alert {level, message, action, reason})-[:ABOUT]->(d)
+
+-- escalation: handoff edge + pending draft citing the clause's quotes
+MATCH (a) WHERE id(a)=$aid
+  CREATE (d:Draft {kind:'notice_letter', body:$body, status:'pending'}) CREATE (a)-[:TRIGGERED]->(d)
+  WITH d UNWIND $quotes AS qtext MATCH (q:Quote {text:qtext}) CREATE (d)-[:CITES]->(q)
+
+-- human approval: corrections recorded, fields approved
+MATCH (l:Lease {id:$id})-[:HAS_CLAUSE]->(:Clause)-[:YIELDS]->(f:Field {key:$key})
+  SET f.value=$val, f.correctedByHuman=true
+  CREATE (:Correction {before:f.value, after:$val, at:$now})-[:EDITS]->(f)
+```
+
+---
+
+*This file grows as queries land. Every query the product depends on must appear here.*
