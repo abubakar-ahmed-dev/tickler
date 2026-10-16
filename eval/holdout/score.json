@@ -1,0 +1,33 @@
+{
+  "run": "C:\\Users\\Admin\\Desktop\\FAST\\projects\\tickler\\eval\\holdout",
+  "fieldAccuracy": "33/33 = 100.0%",
+  "deadlineAccuracy": "11/11 = 100.0%",
+  "avgLatencyMs": 4076,
+  "avgTokensPerLease": 3812,
+  "perLease": [
+    {
+      "id": "lease-10",
+      "fields": "11/11",
+      "deadlines": "4/4",
+      "fieldMisses": [],
+      "deadlineMisses": [],
+      "ungrounded": []
+    },
+    {
+      "id": "lease-11",
+      "fields": "11/11",
+      "deadlines": "3/3",
+      "fieldMisses": [],
+      "deadlineMisses": [],
+      "ungrounded": []
+    },
+    {
+      "id": "lease-12",
+      "fields": "11/11",
+      "deadlines": "4/4",
+      "fieldMisses": [],
+      "deadlineMisses": [],
+      "ungrounded": []
+    }
+  ]
+}
