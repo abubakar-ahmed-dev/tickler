@@ -68,10 +68,6 @@ MATCH (l:Lease {id:$id})-[:HAS_CLAUSE]->(c:Clause {type:$ct})
   CREATE (c)-[:DERIVES]->(:Deadline {type:$type, date:$date, needsReview:$nr, reason:$reason})
 ```
 
----
-
-*This file grows as queries land in Phases 2–5. Every query the product depends on must appear here.*
-
 ## 8. Reminder/alert/draft writes (`worker/activities.mjs`)
 ```cypher
 -- arm: scheduled reminder per deadline × lead time
