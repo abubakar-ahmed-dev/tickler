@@ -37,6 +37,17 @@ RETURN p.text
 ```
 …followed by a code-level `pageText.includes(quote.text)` assertion. The model's quote is never trusted directly.
 
+## 6. Ingestion writes (`pipeline/graph-write.mjs`)
+```cypher
+-- idempotent re-upload: wipe prior incarnation
+MATCH (l:Lease {id:$id})-[:HAS_PAGE]->(p:Page) DETACH DELETE p WITH l DETACH DELETE l
+
+-- create/refresh lease, then pages
+MERGE (l:Lease {id:$id}) SET l.title=$title, l.uploadedAt=$now, l.status='parsing'
+MATCH (l:Lease {id:$id}) CREATE (l)-[:HAS_PAGE]->(:Page {idx:$idx, text:$text})
+MATCH (l:Lease {id:$id}) SET l.status='parsed'
+```
+
 ---
 
-*This file grows as queries land in Phases 2–5. Every query the product depends on must appear here — Graph Hacks deliverable.*
+*This file grows as queries land in Phases 2–5. Every query the product depends on must appear here.*
