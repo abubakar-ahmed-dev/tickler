@@ -337,3 +337,11 @@ input[type=radio] { accent-color: var(--accent); }
 
 .app.railcollapsed .railtop { justify-content: flex-end; }
 .iconbtn.solo { width: 36px; height: 36px; justify-content: center; background: var(--chip); }
+
+/* non-chat pages: centered contained column, gap from rail + header */
+.pagewrap { flex: 1; min-height: 0; display: flex; flex-direction: column; max-width: 940px; width: 100%; margin: 0 auto; padding: 18px 26px 0; }
+.pagewrap .stage { padding: 18px 0 0; }
+.pagewrap .stagehead { padding: 0 4px; }
+
+/* the three non-chat stage sections are siblings of .pagewrap — center to the same column */
+.work > .stage { max-width: 940px; width: 100%; margin: 0 auto; padding: 6px 26px 16px; }

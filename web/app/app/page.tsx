@@ -272,7 +272,11 @@ export default function App() {
           {!collapsed && (
             <button className="leaseshead" onClick={toggleLeases} title={leasesOpen ? "Hide the lease list" : "Show the lease list"}>
               <span>Your leases</span>
-              {leases.some(l => l.needsReview) && <em>{leases.reduce((n, l) => n + l.needsReview, 0)}</em>}
+              {leases.some(l => l.needsReview) && (
+                <em title={`${leases.reduce((n, l) => n + l.needsReview, 0)} deadline(s) need your review across these leases`}>
+                  {leases.reduce((n, l) => n + l.needsReview, 0)}
+                </em>
+              )}
               <ChevronDown size={13} className={`chev ${leasesOpen ? "" : "closed"}`} />
             </button>
           )}
@@ -290,11 +294,11 @@ export default function App() {
                 {leases.map(l => (
                   <button key={l.id} className={`leaserow ${leaseId === l.id ? "active" : ""}`}
                     onClick={() => pickLease(l.id)}
-                    title={`${l.id} — ${STATUS_LABEL[l.status]?.label ?? l.status}`}>
+                    title={`${l.id} — ${STATUS_LABEL[l.status]?.label ?? l.status}${l.needsReview ? ` · ${l.needsReview} deadline(s) need review` : ""}`}>
                     <CircleDot size={12} className={`dot ${STATUS_DOT[l.status] ?? ""}`} />
                     <span className="leasename">
                       {l.id}
-                      {l.needsReview ? <em>{l.needsReview}</em> : null}
+                      {l.needsReview ? <em title={`${l.needsReview} deadline(s) need your review`}>{l.needsReview}</em> : null}
                     </span>
                   </button>
                 ))}
@@ -451,7 +455,7 @@ export default function App() {
         )}
 
         {tab !== "chat" && (
-          <>
+          <div className="pagewrap">
             <div className="stagehead">
               <div>
                 <h2>{tab === "review" ? "Check the details" : tab === "deadlines" ? "Deadlines" : "Alerts & letters"}</h2>
@@ -477,7 +481,7 @@ export default function App() {
                 <p>no lease selected — use <b>📎 Add lease</b> in the sidebar</p>
               </div>
             )}
-          </>
+          </div>
         )}
 
         {tab === "review" && leaseId && (
