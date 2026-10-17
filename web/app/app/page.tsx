@@ -2,14 +2,25 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   MessageSquare, ListChecks, CalendarClock, Bell, Upload, Sparkles,
   ArrowRight, Check, Quote, Zap, ShieldCheck, FileText, Paperclip,
-  PanelLeftClose, PanelLeftOpen, Plus, CircleDot, ChevronDown, Folder,
+  PanelLeftClose, PanelLeftOpen, Plus, CircleDot, ChevronDown, Folder, User,
 } from "lucide-react";
 
 type Lease = { id: string; title: string; status: string; deadlines: number; needsReview: number };
-type Citation = { deadline: { type: string; date: string }; chain: Array<{ step: string; detail: string }> };
+type Citation = { deadline: { type: string; date: string; needsReview?: boolean }; chain: Array<{ step: string; detail: string }> };
+type ChainStep = { step: string; detail: string };
+const firstPage = (c: Citation): number | null => {
+  for (const s of c.chain) {
+    const m = s.detail.match(/page (\d+)\)?$/i);
+    if (s.step === "quote" && m) return Number(m[1]) + 1;
+  }
+  return null;
+};
+const stripPage = (d: string) => d.replace(/\s*\(page \d+\)\s*$/i, "");
 type ChatMsg = { who: "you" | "bot" | "system"; text: string; tools?: string[]; citations?: Citation[] };
 type Field = { clause: string; key: string; value: string; confidence: number; approved: boolean; corrected: boolean; quote: string | null; page: number | null };
 type Deadline = { type: string; date: string; needsReview: boolean; reason: string; reminders: string[] };
@@ -48,6 +59,7 @@ export default function App() {
   const [edits, setEdits] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState("");
   const [armMode, setArmMode] = useState<"demo" | "real">("demo");
+  const [openCites, setOpenCites] = useState<Record<number, number | undefined>>({});
   const [menuWhere, setMenuWhere] = useState<"none" | "ask" | "side">("none");
   const [leasesOpen, setLeasesOpen] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -324,18 +336,71 @@ export default function App() {
               </div>
             )}
             <div className="log" ref={logRef}>
-              {chat.map((m, i) => (
-                <div key={i} className={`msg ${m.who}`}>
-                  {m.who === "bot" && m.tools && <div className="tools">steps taken: {m.tools.join(" → ")}</div>}
-                  {m.text}
-                  {m.citations?.map((c, k) => (
-                    <span className="cite" key={k}>
-                      <b>where it came from: </b>{c.chain.map(s => s.detail).join("  →  ")}
-                    </span>
-                  ))}
-                </div>
-              ))}
-              {thinking && <div className="msg bot tools">thinking…</div>}
+              {chat.map((m, i) =>
+                m.who === "system" ? (
+                  <div key={i} className="msg system">{m.text}</div>
+                ) : (
+                  <div key={i} className={`msgrow ${m.who}`}>
+                    {m.who === "bot" && (
+                      <div className="avatar bot" title="Tickler">
+                        <svg viewBox="0 0 64 64" width="15" height="15" aria-hidden>
+                          <path d="M32 12c-8.3 0-14 6.2-14 14v9l-4 7h36l-4-7v-9c0-7.8-5.7-14-14-14z" fill="none" stroke="#4cc38a" strokeWidth="5" strokeLinejoin="round" />
+                          <path d="M24 28l6 6 11-11" fill="none" stroke="#e6edf3" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </div>
+                    )}
+                    <div className="msgcol">
+                      <div className={`bubble ${m.who}`}>
+                        {m.who === "bot" && m.tools && <div className="tools">steps taken: {m.tools.join(" → ")}</div>}
+                        {m.who === "bot"
+                          ? <div className="md"><ReactMarkdown remarkPlugins={[remarkGfm]}>{m.text}</ReactMarkdown></div>
+                          : m.text}
+                      </div>
+                      {m.who === "bot" && m.citations && m.citations.length > 0 && (
+                        <>
+                          <div className="citepills">
+                            {m.citations.map((c, k) => (
+                              <button key={k} className={`citepill ${openCites[i] === k ? "open" : ""}`}
+                                onClick={() => setOpenCites(s => ({ ...s, [i]: s[i] === k ? undefined : k }))}
+                                title="Show where this came from">
+                                <Quote size={10} />
+                                {c.deadline.type.replace(/_/g, " ")}
+                                {firstPage(c) != null ? ` · page ${firstPage(c)}` : " · computed"}
+                              </button>
+                            ))}
+                          </div>
+                          {openCites[i] !== undefined && m.citations[openCites[i]!] && (
+                            <div className="citecard">
+                              {(() => {
+                                const c = m.citations![openCites[i]!];
+                                return (
+                                  <>
+                                    <p className="cd-head">
+                                      {c.deadline.type.replace(/_/g, " ")} — <b>{c.deadline.date}</b>
+                                      {c.deadline.needsReview ? " · needs your look" : ""}
+                                    </p>
+                                    {c.chain.map((s: ChainStep, k: number) =>
+                                      s.step === "quote" ? (
+                                        <p className="cd-quote" key={k}><Quote size={11} /> “{stripPage(s.detail)}”</p>
+                                      ) : (
+                                        <p className="cd-step" key={k}>{s.detail}</p>
+                                      ))}
+                                  </>
+                                );
+                              })()}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                    {m.who === "you" && (
+                      <div className="avatar you" title="You"><User size={13} /></div>
+                    )}
+                  </div>
+                )
+              )}
+              {thinking && <div className="msgrow bot"><div className="avatar bot" />
+                <div className="msgcol"><div className="bubble bot tools">thinking…</div></div></div>}
             </div>
             {chat.length <= 1 && !thinking && (
               <div className="empty">
