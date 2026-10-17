@@ -135,6 +135,21 @@ export default function App() {
   }, [leaseId, refreshState]);
   useEffect(() => { logRef.current?.scrollTo(0, 1e9); }, [chat, thinking]);
 
+  // seed a greeting when a lease is picked; reset when cleared
+  const seededRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!leaseId) {
+      if (seededRef.current) {
+        seededRef.current = null;
+        setChat([{ who: "bot", text: "Hi! I read your leases and answer questions about them — and every answer shows the exact sentence it came from. Load a sample lease to try it." }]);
+      }
+      return;
+    }
+    if (seededRef.current === leaseId) return;
+    seededRef.current = leaseId;
+    setChat(c => [...c, { who: "bot", text: `We're now talking about ${leaseId}. Ask me anything about it — deadlines, the renewal notice, deposit terms — and I'll answer with the exact lease sentence.` }]);
+  }, [leaseId]);
+
   const current = leases.find(l => l.id === leaseId);
   const unapproved = state?.fields.filter(f => !f.approved) ?? [];
   const scheduledCount = state?.deadlines.reduce((n, d) => n + d.reminders.filter(Boolean).length, 0) ?? 0;
@@ -350,15 +365,15 @@ export default function App() {
           <section className="stage chatstage">
             <header className="pagehead">
               <div className="pht">
-                <h2>Ask About Your Leases</h2>
-                <p className="hint">
-                  {!leases.length && "Load a sample or your own PDF to begin — then ask me anything about it."}
-                  {leases.length > 0 && !leaseId && "Pick one of your leases in the sidebar — then ask me anything about it."}
-                  {leaseId && "Answers quote the exact lease sentence. Deadlines, letters, preferences — just ask."}
-                </p>
+                <h2>{leaseId ? `Talking About ${leaseId.replace(/^lease-/i, "Lease ")}` : "Ask About Your Leases"}</h2>
+                {!leaseId && (
+                  <p className="hint">
+                    {!leases.length && "Load a sample or your own PDF to begin — then ask me anything about it."}
+                    {leases.length > 0 && "Pick one of your leases in the sidebar — then ask me anything about it."}
+                  </p>
+                )}
               </div>
               <div className="ph-badges">
-                {leaseId && <span className="leasetag">{leaseId}</span>}
                 {leaseId && state && <span className={`badge ${STATUS_LABEL[state.lease.status]?.cls ?? ""}`}>{STATUS_LABEL[state.lease.status]?.label}</span>}
                 {busy && <span className="badge warn">{busy}…</span>}
               </div>
