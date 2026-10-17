@@ -73,7 +73,7 @@ export default function App() {
   const [leasesLoaded, setLeasesLoaded] = useState(false);
   const [leaseId, setLeaseId] = useState("");
   const [chat, setChat] = useState<ChatMsg[]>([
-    { who: "bot", text: "Hi! I read your leases and answer questions about them — and every answer shows the exact sentence it came from. Load a sample lease to try it." },
+    { who: "bot", text: "Hi! I read your leases and answer questions about them, and every answer shows the exact sentence it came from. Load a sample lease to try it." },
   ]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
@@ -141,7 +141,7 @@ export default function App() {
       body: JSON.stringify({ email: emailDraft.trim() }),
     });
     const j = await r.json();
-    setEmailSaved(j.error ? `couldn't save: ${j.error}` : "saved ✓ — alerts will be emailed here");
+    setEmailSaved(j.error ? `couldn't save: ${j.error}` : "saved ✓, alerts will be emailed here");
     setTimeout(() => setEmailSaved(""), 4000);
   };
   useEffect(() => { refreshState(leaseId); }, [leaseId, refreshState]);
@@ -158,7 +158,7 @@ export default function App() {
     if (!leaseId) {
       if (seededRef.current) {
         seededRef.current = null;
-        setChat([{ who: "bot", text: "Hi! I read your leases and answer questions about them — and every answer shows the exact sentence it came from. Load a sample lease to try it." }]);
+        setChat([{ who: "bot", text: "Hi! I read your leases and answer questions about them, and every answer shows the exact sentence it came from. Load a sample lease to try it." }]);
       }
       return;
     }
@@ -166,8 +166,8 @@ export default function App() {
     seededRef.current = leaseId;
     // fresh seed replaces the greeting; a real conversation keeps its history
     setChat(c => (c.length <= 1
-      ? [{ who: "bot", text: `We're now talking about ${leaseId}. Ask me anything about it — deadlines, the renewal notice, deposit terms — and I'll answer with the exact lease sentence.` }]
-      : [...c, { who: "bot", text: `Now talking about ${leaseId}.` }]));
+      ? [{ who: "bot", text: `We are now talking about ${leaseId}. Ask me anything about it, such as deadlines, the renewal notice, or deposit terms. I will answer with the exact sentence from the lease.` }]
+      : [...c, { who: "bot", text: `We are now talking about ${leaseId}.` }]));
   }, [leaseId]);
 
   const current = leases.find(l => l.id === leaseId);
@@ -213,7 +213,7 @@ export default function App() {
       else {
         await refreshLeases();
         setLeaseId(j.leaseId);
-        say(`Sample loaded — ${j.deadlines} deadline(s) found. Open Check details to look them over, then approve to turn on reminders.`);
+        say(`Sample loaded, ${j.deadlines} deadline(s) found. Open Check details to look them over, then approve to turn on reminders.`);
       }
     } catch (e) { say(`Connection problem: ${(e as Error).message}`); }
     setBusy("");
@@ -231,7 +231,7 @@ export default function App() {
     if (j.error) { setBusy(""); say(`That PDF didn't work: ${j.error}`); return; }
     await refreshLeases();
     setLeaseId(j.leaseId!);
-    setBusy("reading your lease — up to a minute");
+    setBusy("reading your lease, this can take up to a minute");
     await fetch("/api/extract", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ leaseId: j.leaseId }) });
     setBusy("");
     refreshLeases(); refreshState(j.leaseId!);
@@ -250,7 +250,7 @@ export default function App() {
       const j = await r.json();
       if (j.error) say(`Couldn't turn reminders on: ${j.error}`);
       else say(`Approved with ${corrections.length} change(s). ${j.armed} deadline(s) armed` +
-        (j.mode === "demo" ? ` — first alert lands in about ${j.firstFireSec} seconds. Watch Alerts.` : " on the real 90/30/7-day schedule."));
+        (j.mode === "demo" ? `, first alert lands in about ${j.firstFireSec} seconds. Watch Alerts.` : " on the real 90/30/7-day schedule."));
       setTab("deadlines");
     } catch (e) { say(`Connection problem: ${(e as Error).message}`); }
     setBusy("");
@@ -259,7 +259,7 @@ export default function App() {
 
   const decideDraft = async (draftId: number, action: "approve" | "discard") => {
     await fetch("/api/drafts", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ draftId, action }) });
-    say(action === "approve" ? "Letter approved — ready to send." : "Letter thrown away.");
+    say(action === "approve" ? "Letter approved, ready to send." : "Letter thrown away.");
     refreshState(leaseId);
   };
 
@@ -323,7 +323,7 @@ export default function App() {
             </button>
           )}
           {collapsed && (
-            <button className="railitem" title={`Your leases (${leases.length}) — click to expand`} onClick={toggleRail}>
+            <button className="railitem" title={`Your leases (${leases.length}), click to expand`} onClick={toggleRail}>
               <Folder size={17} strokeWidth={1.8} />
               {leases.some(l => l.needsReview) ? <em>•</em> : null}
             </button>
@@ -340,7 +340,7 @@ export default function App() {
                 {leases.map(l => (
                   <button key={l.id} className={`leaserow ${leaseId === l.id ? "active" : ""}`}
                     onClick={() => setLeaseId(l.id)}
-                    title={`${l.id} — ${STATUS_LABEL[l.status]?.label ?? l.status}${l.needsReview ? ` · ${l.needsReview} deadline(s) need review` : ""}`}>
+                    title={`${l.id}, ${STATUS_LABEL[l.status]?.label ?? l.status}${l.needsReview ? ` · ${l.needsReview} deadline(s) need review` : ""}`}>
                     <CircleDot size={12} className={`dot ${STATUS_DOT[l.status] ?? ""}`} />
                     <span className="leasename">
                       {l.id}
@@ -382,7 +382,7 @@ export default function App() {
         {busy && <div className="workingline"><span className="badge warn">{busy}…</span></div>}
         {unapproved.length > 0 && leaseId && tab !== "chat" && tab !== "review" && (
           <button className="nudge" onClick={() => setTab("review")}>
-            <Zap size={14} /> {unapproved.length} details need your review — reminders stay off until you approve. <b>Open Check details <ArrowRight size={12} /></b>
+            <Zap size={14} /> {unapproved.length} details need your review, and reminders stay off until you approve. <b>Open Check details <ArrowRight size={12} /></b>
           </button>
         )}
 
@@ -394,8 +394,8 @@ export default function App() {
                 <h2>{leaseId ? `Talking About ${leaseId.replace(/^lease-/i, "Lease ")}` : "Ask About Your Leases"}</h2>
                 {!leaseId && (
                   <p className="hint">
-                    {!leases.length && "Load a sample or your own PDF to begin — then ask me anything about it."}
-                    {leases.length > 0 && "Pick one of your leases in the sidebar — then ask me anything about it."}
+                    {!leases.length && "Load a sample or your own PDF to begin, then ask me anything about it."}
+                    {leases.length > 0 && "Pick one of your leases in the sidebar, then ask me anything about it."}
                   </p>
                 )}
               </div>
@@ -448,7 +448,7 @@ export default function App() {
                                       <span className="cd-label">Sources</span>
                                       {c.clause && <span className="clausechip">{c.clause.replace(/_/g, " ")}</span>}
                                       <span className="badge">{c.deadline.date}</span>
-                                      {c.deadline.needsReview && <span className="badge bad">needs your look</span>}
+                                      {c.deadline.needsReview && <span className="badge bad">needs your review</span>}
                                     </div>
                                     {quotes.length > 0 ? quotes.map((s, k) => {
                                       const pageM = s.detail.match(/page (\d+)\)?$/i);
@@ -460,9 +460,9 @@ export default function App() {
                                         </div>
                                       );
                                     }) : (
-                                      <p className="cd-step">no quoted sentence — this value came from your own edit or isn&apos;t written in the lease.</p>
+                                      <p className="cd-step">no quoted sentence. This value came from your own edit, or it is not written in the lease.</p>
                                     )}
-                                    <p className="cd-foot">the date itself is computed in code from the details you approved</p>
+                                    <p className="cd-foot">The date is calculated automatically from the details you approved.</p>
                                   </>
                                 );
                               })()}
@@ -526,7 +526,7 @@ export default function App() {
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && send()}
-                placeholder={busy ? `working — ${busy}…` : leaseId ? `Ask about ${leaseId}…` : "Ask about your leases…"}
+                placeholder={busy ? `working, ${busy}…` : leaseId ? `Ask about ${leaseId}…` : "Ask about your leases…"}
                 aria-label="Ask about your leases"
                 readOnly={!!busy}
               />
@@ -541,7 +541,7 @@ export default function App() {
             <header className="pagehead">
               <div className="pht">
                 <h2>Check The Details</h2>
-                <p className="hint">Each detail shows the sentence it came from. Fix anything wrong — your fixes are remembered. Reminders only start after you approve.</p>
+                <p className="hint">Each detail shows the sentence it came from. Fix anything wrong, and your changes are saved. Reminders only start after you approve.</p>
               </div>
               <div className="ph-badges">
                 {leaseId && <span className="leasetag">{leaseId}</span>}
@@ -550,13 +550,13 @@ export default function App() {
               </div>
             </header>
             {!leaseId ? (
-              <div className="empty"><ListChecks size={26} /><p>no lease selected — use <b>📎 Add lease</b> in the sidebar</p></div>
+              <div className="empty"><ListChecks size={26} /><p>no lease selected, use <b>📎 Add lease</b> in the sidebar</p></div>
             ) : (
               <div className="scroller">
                 {unapproved.length === 0 && (
                   <div className="empty">
                     <ShieldCheck size={26} />
-                    <p>everything approved{state?.lease?.status === "armed" ? " — reminders are running." : " — turn reminders on to finish setup."}</p>
+                    <p>everything approved{state?.lease?.status === "armed" ? ". Reminders are running." : ". Turn reminders on to finish setup."}</p>
                     {state?.lease?.status !== "armed" && (
                       <button className="btn primary" onClick={submitReview} disabled={!!busy}>Turn on reminders</button>
                     )}
@@ -575,7 +575,7 @@ export default function App() {
                       placeholder={f.value === "unknown" ? "not written in the lease" : f.value} />
                     {f.quote
                       ? <div className="fsource"><Quote size={12} /> <span>“{f.quote.slice(0, 170)}”</span> <span className="pg">page {(f.page ?? 0) + 1}</span></div>
-                      : <div className="fsource none">no source sentence — {f.value === "unknown" ? "not written in the lease" : "set by you"}</div>}
+                      : <div className="fsource none">no source sentence: {f.value === "unknown" ? "not written in the lease" : "set by you"}</div>}
                   </div>
                 ))}
                 {unapproved.length > 0 && (
@@ -583,15 +583,15 @@ export default function App() {
                     <div className="armmodes">
                       <label className={armMode === "demo" ? "on" : ""}>
                         <input type="radio" name="arm" checked={armMode === "demo"} onChange={() => setArmMode("demo")} />
-                        <div><b>Demo speed</b><span>alerts land in about 24 seconds — watch them live</span></div>
+                        <div><b>Demo speed</b><span>alerts arrive in about 24 seconds so you can watch them live</span></div>
                       </label>
                       <label className={armMode === "real" ? "on" : ""}>
                         <input type="radio" name="arm" checked={armMode === "real"} onChange={() => setArmMode("real")} />
-                        <div><b>Real schedule</b><span>90 / 30 / 7 days before each deadline</span></div>
+                        <div><b>Real schedule</b><span>90, 30 and 7 days before each deadline</span></div>
                       </label>
                     </div>
                     <button className="btn primary big" onClick={submitReview} disabled={!!busy}>
-                      Approve &amp; turn on reminders <ArrowRight size={15} />
+                      Approve and turn on reminders <ArrowRight size={15} />
                     </button>
                   </div>
                 )}
@@ -606,7 +606,7 @@ export default function App() {
             <header className="pagehead">
               <div className="pht">
                 <h2>Deadlines</h2>
-                <p className="hint">Computed in code from the details you approved. Reminders fire on their own — nothing for you to do once they&apos;re on.</p>
+                <p className="hint">These dates come from the details you approved. Reminders fire on their own, so there is nothing for you to do once they are on.</p>
               </div>
               <div className="ph-badges">
                 {leaseId && <span className="leasetag">{leaseId}</span>}
@@ -614,10 +614,10 @@ export default function App() {
               </div>
             </header>
             {!leaseId ? (
-              <div className="empty"><CalendarClock size={26} /><p>no lease selected — use <b>📎 Add lease</b> in the sidebar</p></div>
+              <div className="empty"><CalendarClock size={26} /><p>no lease selected, use <b>📎 Add lease</b> in the sidebar</p></div>
             ) : (
               <div className="scroller">
-                {state?.deadlines.length === 0 && <div className="empty"><CalendarClock size={26} /><p>no deadlines yet — check the details first</p></div>}
+                {state?.deadlines.length === 0 && <div className="empty"><CalendarClock size={26} /><p>no deadlines yet, check the details first</p></div>}
                 {state?.deadlines.map(d => (
                   <div className="deadlinecard" key={d.type + d.date}>
                     <div className="dl-left">
@@ -627,12 +627,12 @@ export default function App() {
                     </div>
                     <div className="dl-right">
                       {d.needsReview
-                        ? <span className="badge bad">needs your look</span>
+                        ? <span className="badge bad">needs your review</span>
                         : d.reminders.filter(Boolean).length > 0
                           ? <span className="badge ok">{d.reminders.filter(Boolean).length} reminders on</span>
                           : state.lease?.status === "armed"
                             ? <span className="badge">on</span>
-                            : <span className="badge">not on yet</span>}
+                            : <span className="badge">reminders off</span>}
                     </div>
                   </div>
                 ))}
@@ -647,7 +647,7 @@ export default function App() {
             <header className="pagehead">
               <div className="pht">
                 <h2>Alerts &amp; Letters</h2>
-                <p className="hint">When a reminder fires, the helper decides: wait, give a heads-up, or write a letter. Letters always wait for your approval.</p>
+                <p className="hint">When a reminder goes out, the helper decides whether to wait, give you a heads-up, or write a letter. Letters always wait for your approval.</p>
               </div>
               <div className="ph-badges">
                 {leaseId && <span className="leasetag">{leaseId}</span>}
@@ -662,22 +662,22 @@ export default function App() {
               {emailSaved && <span className="badge ok">{emailSaved}</span>}
             </div>
             {!leaseId ? (
-              <div className="empty"><Bell size={26} /><p>no lease selected — use <b>📎 Add lease</b> in the sidebar</p></div>
+              <div className="empty"><Bell size={26} /><p>no lease selected, use <b>📎 Add lease</b> in the sidebar</p></div>
             ) : (
               <div className="scroller">
                 {state && state.alerts.length === 0 && (
                   <div className="empty">
                     <Bell size={26} />
                     <p>{scheduledCount > 0
-                      ? `${scheduledCount} reminders running — the first alert lands shortly (demo speed). This page updates by itself.`
-                      : "No alerts yet. Turn reminders on and they show up here as they fire."}</p>
+                      ? `${scheduledCount} reminders running, the first alert lands shortly (demo speed). This page updates by itself.`
+                      : "No alerts yet. Turn reminders on, and they will show up here as they fire."}</p>
                   </div>
                 )}
                 {state?.alerts.map(a => (
                   <div className={`alertcard ${a.action}`} key={a.alertId}>
                     <div className="alerttop">
                       <span className={`badge ${a.action === "escalate" ? "bad" : a.action === "alert" ? "warn" : ""}`}>
-                        {a.action === "escalate" ? "urgent → letter written" : a.action === "alert" ? "heads up" : "waited"}
+                        {a.action === "escalate" ? "urgent, letter ready" : a.action === "alert" ? "heads up" : "waited"}
                       </span>
                       <span className="when">{new Date(a.at).toLocaleTimeString()}{a.emailed ? " · ✉ emailed" : ""}</span>
                     </div>
@@ -685,7 +685,7 @@ export default function App() {
                     {a.reason && <p className="areason">why: {a.reason}</p>}
                     {a.draftId && a.draftStatus === "pending" && (
                       <div className="draftrow">
-                        <span className="badge warn">letter waiting — your call</span>
+                        <span className="badge warn">letter waiting, your call</span>
                         <button className="btn ghost" onClick={() => decideDraft(a.draftId!, "approve")}>Approve letter</button>
                         <button className="btn ghost" onClick={() => decideDraft(a.draftId!, "discard")}>Discard</button>
                       </div>

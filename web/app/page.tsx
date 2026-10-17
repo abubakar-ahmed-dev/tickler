@@ -2,13 +2,13 @@ import Link from "next/link";
 import {
   ArrowRight, Star, FileText, CheckSquare, BellRing, Quote,
   AlarmClockCheck, ShieldCheck, UserCheck, Network, Blocks, Scale,
-  Paperclip, CircleDot, Terminal,
+  Paperclip, CircleDot,
 } from "lucide-react";
 
 export const metadata = {
-  title: "Tickler — never miss a lease deadline again",
+  title: "Tickler, never miss a lease deadline again",
   description:
-    "An agent that reads your lease, remembers the dates hiding in it, and shows the exact sentence behind every answer. Open weights, durable timers, your documents stay yours.",
+    "Tickler reads your lease, remembers the dates hidden inside it, and shows you the exact sentence behind every answer. It uses open-weight models and reminders that survive restarts, and your documents stay on your machine.",
 };
 
 const stack = [
@@ -22,15 +22,15 @@ const stack = [
 const steps = [
   {
     n: "01", icon: FileText, title: "Upload a lease",
-    body: "Drop in a PDF. Every term is extracted and anchored to the exact sentence it came from — quote, page, and confidence shown.",
+    body: "Drop in a PDF. Tickler reads it and shows each important date with the sentence it came from, the page number, and how sure it is.",
   },
   {
     n: "02", icon: CheckSquare, title: "Approve in one pass",
-    body: "Anything wrong? Fix it inline. Your corrections are remembered — the agent learns how you run your properties.",
+    body: "See something wrong? Fix it in one click. Your corrections are saved, so the answers get better over time.",
   },
   {
     n: "03", icon: BellRing, title: "Never think about it again",
-    body: "Durable reminders fire 90, 30 and 7 days out — and they survive crashes. Letters arrive drafted, waiting for your OK.",
+    body: "Reminders arrive 90, 30 and 7 days before each date. They keep working even after a restart. Letters come to you already written, and you decide whether to send them.",
   },
 ];
 
@@ -39,17 +39,17 @@ function HeroMock() {
     <div className="heromock" aria-hidden>
       <div className="mockbar">
         <i /><i /><i />
-        <span>tickler — lease-04</span>
+        <span>tickler, lease-04</span>
       </div>
       <div className="mockbody">
         <div className="mockmsg you">what&apos;s coming up on lease-04?</div>
         <div className="mockmsg bot">
-          Three deadlines are armed. The term ends <b>June 14, 2028</b> — and the renewal
+          Three deadlines are armed. The term ends <b>June 14, 2028</b>, and the renewal
           notice is due <b>April 15, 2028</b>.
           <span className="mockpill"><Quote size={9} /> renewal_notice · page 2</span>
         </div>
         <div className="mockalert">
-          <span className="mockalert-tag">urgent → letter drafted</span>
+          <span className="mockalert-tag">urgent, letter ready</span>
           <p>Renewal notice for lease-04 is due soon. The letter is ready for your approval.</p>
           <div className="mockalert-btns"><i>Approve letter</i><i>Discard</i></div>
         </div>
@@ -88,9 +88,9 @@ export default function Landing() {
           Never Miss A<br />Lease Deadline <span className="glow">Again.</span>
         </h1>
         <p className="sub">
-          Tickler reads your lease, remembers the dates hiding inside it, and shows you the exact
-          sentence behind every answer. Open-weight models. Timers that can&apos;t forget.
-          Your documents stay yours.
+          Tickler reads your lease, remembers the important dates hidden inside it, and shows you the exact
+          sentence behind every answer. It uses open-weight models, its reminders survive restarts,
+          and your documents stay on your machine.
         </p>
         <div className="hero-ctas">
           <Link href="/app" className="cta">Open the app <ArrowRight size={17} /></Link>
@@ -99,7 +99,7 @@ export default function Landing() {
           </a>
         </div>
         <div className="trust">
-          <span>grounded answers</span><i /> <span>kill-proof timers</span><i /> <span>human-approved letters</span><i /> <span>graph memory</span>
+          <span>every answer shows its source</span><i /> <span>reminders that survive restarts</span><i /> <span>you approve every letter</span><i /> <span>it remembers your preferences</span>
         </div>
         <HeroMock />
       </section>
@@ -116,7 +116,7 @@ export default function Landing() {
 
       <section className="section" id="how">
         <p className="kicker">How it works</p>
-        <h2>Three Steps. Then It Never Sleeps.</h2>
+        <h2>Three Steps, And Then It Runs Itself.</h2>
         <div className="timeline">
           <div className="tlline" />
           {steps.map((s, i) => (
@@ -132,14 +132,14 @@ export default function Landing() {
 
       <section className="section alt" id="why">
         <p className="kicker">Why Tickler</p>
-        <h2>Built Like The Paperwork Matters. Because It Does.</h2>
+        <h2>Careful With The Details, Because They Matter.</h2>
 
         <div className="bento">
           <div className="btile wide">
             <div className="bt-copy">
               <Quote size={22} strokeWidth={1.7} className="cardicon" />
               <h3>Citations, not vibes</h3>
-              <p>Every answer carries the verbatim lease sentence and page it came from — validated against the document in code before it&apos;s allowed to exist. If it isn&apos;t in the lease, Tickler says so.</p>
+              <p>Every answer shows the exact sentence and page from your lease. Tickler checks each quote against the document automatically. If something is not written in the lease, it says so.</p>
             </div>
             <div className="bt-visual">
               <span className="bt-chip"><Quote size={9} /> term end · page 1</span>
@@ -151,7 +151,7 @@ export default function Landing() {
           <div className="btile">
             <AlarmClockCheck size={22} strokeWidth={1.7} className="cardicon" />
             <h3>Timers that survive crashes</h3>
-            <p>Reminders are Temporal workflows. We kill the worker on camera — every timer still fires.</p>
+            <p>Reminders are built on Temporal workflows. In our demo we stop the worker program, and every reminder still arrives on time.</p>
             <div className="bt-diag">
               <span className="kill">worker ✕</span>
               <i />
@@ -162,14 +162,14 @@ export default function Landing() {
           <div className="btile">
             <ShieldCheck size={22} strokeWidth={1.7} className="cardicon" />
             <h3>Your documents stay yours</h3>
-            <p>Open-weight models, no closed API in the pipeline.</p>
-            <span className="bt-mini">0 closed-API calls</span>
+            <p>Tickler uses open-weight models, so your lease never travels to a closed service.</p>
+            <span className="bt-mini">no closed services</span>
           </div>
 
           <div className="btile">
             <UserCheck size={22} strokeWidth={1.7} className="cardicon" />
             <h3>Letters wait for you</h3>
-            <p>Drafted from the lease&apos;s own sentences — born pending, always.</p>
+            <p>Letters are written using the sentences from your lease, and they always wait for your approval.</p>
             <div className="bt-letter">
               <span>Draft · renewal notice</span>
               <i>Approve</i><i className="no">Discard</i>
@@ -179,7 +179,7 @@ export default function Landing() {
           <div className="btile">
             <Network size={22} strokeWidth={1.7} className="cardicon" />
             <h3>A memory that compounds</h3>
-            <p>Corrections and preferences live in the graph. It knows your portfolio better every week.</p>
+            <p>Your fixes and preferences are saved in the database. The more you use it, the better it knows your properties.</p>
             <div className="bt-diag soft">
               <span>fix #14 → remembered</span>
             </div>
@@ -189,7 +189,7 @@ export default function Landing() {
         <div className="btile slim">
           <Blocks size={18} strokeWidth={1.7} className="cardicon inline" />
           <h3>MCP-native tools</h3>
-          <p>Six tools over the Model Context Protocol — plug Tickler&apos;s graph into any MCP client you already run.</p>
+          <p>Six tools are available through the Model Context Protocol, so you can connect Tickler to the AI tools you already use.</p>
           <code className="bt-term">npx tickler-mcp <i># six Cypher-backed tools, stdio</i></code>
         </div>
       </section>
@@ -197,31 +197,31 @@ export default function Landing() {
       <section className="stats">
         <div className="stat">
           <b>&lt;5s</b>
-          <span>to read a lease and ground every term</span>
+          <span>to read a lease and list every important date</span>
         </div>
         <div className="stat">
           <b>100%</b>
-          <span>of quotes verified against the document, in code</span>
+          <span>of quotes checked against the document automatically</span>
         </div>
         <div className="stat">
           <b>0</b>
-          <span>deadlines forgotten by the machine. Ever.</span>
+          <span>dates the reminder system has ever missed</span>
         </div>
       </section>
 
       <section className="principle">
         <p className="kicker">The principle</p>
         <blockquote>
-          The machine&apos;s job is to never forget a date.
-          The human&apos;s job is to decide.
-          <span>Tickler keeps both honest.</span>
+          The software must never forget a date.
+          The human must make the decisions.
+          <span>Tickler keeps both of these promises.</span>
         </blockquote>
       </section>
 
       <section className="closing">
-        <h2>The Deadline Machine That Can&apos;t Forget.</h2>
+        <h2>The Reminder Helper That Never Forgets A Date.</h2>
         <Link href="/app" className="cta big">Open the app <ArrowRight size={18} /></Link>
-        <p className="closing-note">free · open source · your data stays on your machine</p>
+        <p className="closing-note">Free, open source, and your data stays on your machine.</p>
       </section>
 
       <footer className="foot">
@@ -236,7 +236,7 @@ export default function Landing() {
               </svg>
               Tickler
             </div>
-            <p>Your lease&apos;s tickler file.<br />Reads the paperwork. Remembers the dates. Shows its sources.</p>
+            <p>It reads your lease papers, remembers the dates, and shows where each answer came from.</p>
           </div>
           <div className="foot-col">
             <b>Product</b>
@@ -259,7 +259,7 @@ export default function Landing() {
         </div>
         <div className="foot-bottom">
           <span>© 2026 Tickler · MIT licensed</span>
-          <span>Tickler reads, reminds and drafts — it isn&apos;t legal advice. <Scale size={11} style={{ transform: "translateY(2px)" }} /></span>
+          <span>Tickler reads, reminds, and writes drafts. It does not give legal advice. <Scale size={11} style={{ transform: "translateY(2px)" }} /></span>
         </div>
       </footer>
     </div>
