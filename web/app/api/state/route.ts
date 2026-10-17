@@ -36,7 +36,7 @@ export async function GET(req: Request) {
     `MATCH (l:Lease {id:$id})-[:HAS_CLAUSE]->(:Clause)-[:DERIVES]->(:Deadline)<-[:ABOUT]-(a:Alert)
      OPTIONAL MATCH (a)-[:TRIGGERED]->(dr:Draft)
      RETURN id(a) AS alertId, a.action AS action, a.level AS level, a.message AS message,
-            a.reason AS reason, a.createdAt AS at, id(dr) AS draftId, dr.status AS draftStatus
+            a.reason AS reason, a.createdAt AS at, a.emailed AS emailed, id(dr) AS draftId, dr.status AS draftStatus
      ORDER BY a.createdAt DESC LIMIT 30`,
     { params: { id: leaseId } });
 

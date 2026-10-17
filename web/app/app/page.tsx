@@ -16,7 +16,7 @@ type ChainStep = { step: string; detail: string };
 type ChatMsg = { who: "you" | "bot" | "system"; text: string; tools?: string[]; citations?: Citation[] };
 type Field = { clause: string; key: string; value: string; confidence: number; approved: boolean; corrected: boolean; quote: string | null; page: number | null };
 type Deadline = { type: string; date: string; needsReview: boolean; reason: string; reminders: string[] };
-type Alert = { alertId: number; action: string; level: string; message: string; reason: string; at: string; draftId: number | null; draftStatus: string | null };
+type Alert = { alertId: number; action: string; level: string; message: string; reason: string; at: string; emailed?: boolean; draftId: number | null; draftStatus: string | null };
 type LeaseState = { lease: { id: string; title: string; status: string; extractClean: boolean }; fields: Field[]; deadlines: Deadline[]; alerts: Alert[] };
 type Tab = "chat" | "review" | "deadlines" | "alerts";
 
@@ -679,7 +679,7 @@ export default function App() {
                       <span className={`badge ${a.action === "escalate" ? "bad" : a.action === "alert" ? "warn" : ""}`}>
                         {a.action === "escalate" ? "urgent → letter written" : a.action === "alert" ? "heads up" : "waited"}
                       </span>
-                      <span className="when">{new Date(a.at).toLocaleTimeString()}</span>
+                      <span className="when">{new Date(a.at).toLocaleTimeString()}{a.emailed ? " · ✉ emailed" : ""}</span>
                     </div>
                     <p className="amsg">{a.message}</p>
                     {a.reason && <p className="areason">why: {a.reason}</p>}
