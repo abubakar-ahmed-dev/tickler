@@ -226,13 +226,27 @@ export default function App() {
 
       <div className="work">
         <div className="contextbar">
-          <select value={leaseId} onChange={e => setLeaseId(e.target.value)} aria-label="Select a lease">
-            <option value="">{leases.length ? "Select a lease" : "No leases yet"}</option>
-            {leases.map(l => (
-              <option key={l.id} value={l.id}>
-                {l.id} · {STATUS_LABEL[l.status]?.label ?? l.status}{l.needsReview ? ` (${l.needsReview})` : ""}
-              </option>
-            ))}
+          <span className="viewing">Viewing:</span>
+          <select value={leaseId} onChange={e => setLeaseId(e.target.value)} aria-label="Switch between loaded leases">
+            <option value="">{leases.length ? "Pick a lease to view" : "No leases yet — load a sample or upload a PDF"}</option>
+            {leases.filter(l => l.title.startsWith("Sample")).length > 0 && (
+              <optgroup label="Sample leases">
+                {leases.filter(l => l.title.startsWith("Sample")).map(l => (
+                  <option key={l.id} value={l.id}>
+                    {l.id} · {STATUS_LABEL[l.status]?.label ?? l.status}{l.needsReview ? ` (${l.needsReview})` : ""}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+            {leases.filter(l => !l.title.startsWith("Sample")).length > 0 && (
+              <optgroup label="Your uploads">
+                {leases.filter(l => !l.title.startsWith("Sample")).map(l => (
+                  <option key={l.id} value={l.id}>
+                    {l.id} · {STATUS_LABEL[l.status]?.label ?? l.status}{l.needsReview ? ` (${l.needsReview})` : ""}
+                  </option>
+                ))}
+              </optgroup>
+            )}
           </select>
           {current && <span className={`badge ${STATUS_LABEL[current.status]?.cls ?? ""}`}>{STATUS_LABEL[current.status]?.label ?? current.status}</span>}
           <span className="spacer" />
