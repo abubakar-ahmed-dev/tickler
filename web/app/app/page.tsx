@@ -378,7 +378,7 @@ export default function App() {
                                   <>
                                     <div className="cd-top">
                                       <span className="cd-label">Sources</span>
-                                      <span className="clausechip">{c.clause.replace(/_/g, " ")}</span>
+                                      <span className="clausechip">{(c.clause ?? "lease").replace(/_/g, " ")}</span>
                                       <span className="badge">{c.deadline.date}</span>
                                       {c.deadline.needsReview && <span className="badge bad">needs your look</span>}
                                     </div>
