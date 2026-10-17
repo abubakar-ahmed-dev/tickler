@@ -96,7 +96,7 @@ input[type=radio] { accent-color: var(--accent); }
 .app { display: flex; height: 100vh; overflow: hidden; }
 
 /* rail */
-.rail { width: 232px; flex: none; background: #12181e; border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 16px 12px; gap: 18px; }
+.rail { width: 236px; transition: width .18s ease; flex: none; background: #12181e; border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 16px 12px; gap: 18px; }
 .railnav { display: flex; flex-direction: column; gap: 3px; }
 .railitem { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: transparent; border: 0; color: var(--dim); border-radius: 8px; padding: 10px 12px; font-size: 13.5px; font-weight: 500; }
 .railitem:hover { background: var(--chip); color: var(--text); }
@@ -201,3 +201,26 @@ input[type=radio] { accent-color: var(--accent); }
   .stage { height: auto; }
   .armmodes { grid-template-columns: 1fr; }
 }
+
+/* collapsed rail */
+.app.railcollapsed .rail { width: 68px; padding: 14px 10px; }
+.app.railcollapsed .brand span { display: none; }
+.app.railcollapsed .railtop { justify-content: center; flex-wrap: wrap; gap: 8px; }
+.app.railcollapsed .railitem { justify-content: center; padding: 10px; }
+.app.railcollapsed .railfoot { display: none; }
+.railtop { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.iconbtn { background: transparent; border: 0; color: var(--dim); border-radius: 6px; padding: 6px; display: inline-flex; }
+.iconbtn:hover { background: var(--chip); color: var(--text); }
+
+/* icon buttons in askbar */
+.btn.icon { background: var(--chip); border: 1px solid var(--line); color: var(--dim); padding: 11px; border-radius: 10px; }
+.btn.icon:hover { color: var(--text); border-color: var(--line2); }
+
+/* chat spacing + hover-only scrollbar */
+.chatstage { padding-bottom: 18px; gap: 0; }
+.log { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+.log::-webkit-scrollbar { width: 9px; }
+.log::-webkit-scrollbar-thumb { background: transparent; border: none; }
+.log:hover { scrollbar-color: var(--line2) transparent; }
+.log:hover::-webkit-scrollbar-thumb { background: var(--line2); border: 2px solid var(--bg); }
+.askbar { padding: 12px 0 0; }

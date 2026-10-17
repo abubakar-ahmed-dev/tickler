@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   MessageSquare, ListChecks, CalendarClock, Bell, Upload, Sparkles,
-  ArrowRight, Check, Quote, Zap, ShieldCheck, FileText,
+  ArrowRight, Check, Quote, Zap, ShieldCheck, FileText, Paperclip,
+  PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 
 type Lease = { id: string; title: string; status: string; deadlines: number; needsReview: number };
@@ -19,24 +20,25 @@ type Tab = "chat" | "review" | "deadlines" | "alerts";
 const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
   parsing: { label: "reading PDF", cls: "" },
   parsed: { label: "parsed", cls: "" },
-  extracting: { label: "extracting terms", cls: "" },
-  awaiting_review: { label: "needs your review", cls: "warn" },
-  armed: { label: "reminders running", cls: "ok" },
+  extracting: { label: "reading your lease", cls: "" },
+  awaiting_review: { label: "waiting for your review", cls: "warn" },
+  armed: { label: "reminders on", cls: "ok" },
   rejected: { label: "rejected", cls: "bad" },
 };
 
 const STARTERS = [
   { icon: CalendarClock, text: "What deadlines are coming up?" },
   { icon: Quote, text: "Why does this lease have a term end deadline?" },
-  { icon: FileText, text: "Draft the renewal notice for this lease." },
+  { icon: FileText, text: "Write the renewal notice for this lease." },
 ];
 
 export default function App() {
   const [tab, setTab] = useState<Tab>("chat");
+  const [collapsed, setCollapsed] = useState(false);
   const [leases, setLeases] = useState<Lease[]>([]);
   const [leaseId, setLeaseId] = useState("");
   const [chat, setChat] = useState<ChatMsg[]>([
-    { who: "bot", text: "I'm the Concierge. I answer from your leases — and every answer shows the exact sentence it came from. Load a sample lease, then ask me anything." },
+    { who: "bot", text: "Hi! I read your leases and answer questions about them — and every answer shows the exact sentence it came from. Load a sample lease to try it." },
   ]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
@@ -45,6 +47,17 @@ export default function App() {
   const [busy, setBusy] = useState("");
   const [armMode, setArmMode] = useState<"demo" | "real">("demo");
   const logRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem("tickler-rail");
+    if (saved === "collapsed") setCollapsed(true);
+  }, []);
+  const toggleRail = () => {
+    setCollapsed(c => {
+      window.localStorage.setItem("tickler-rail", c ? "open" : "collapsed");
+      return !c;
+    });
+  };
 
   const say = useCallback((text: string) => setChat(c => [...c, { who: "system", text }]), []);
 
@@ -75,8 +88,8 @@ export default function App() {
 
   const steps = [
     { done: leases.length > 0, label: "Load a lease" },
-    { done: !!state && unapproved.length === 0, label: "Approve terms" },
-    { done: state?.lease?.status === "armed", label: "Arm reminders" },
+    { done: !!state && unapproved.length === 0, label: "Check the details" },
+    { done: state?.lease?.status === "armed", label: "Turn on reminders" },
     { done: (state?.alerts.length ?? 0) > 0, label: "See alerts" },
   ];
   const doneCount = steps.filter(s => s.done).length;
@@ -102,7 +115,7 @@ export default function App() {
   };
 
   const loadSample = async () => {
-    setBusy("reading and extracting the sample");
+    setBusy("reading the sample lease");
     try {
       const r = await fetch("/api/sample", { method: "POST" });
       const j = await r.json();
@@ -110,7 +123,7 @@ export default function App() {
       else {
         await refreshLeases();
         setLeaseId(j.leaseId);
-        say(`Sample loaded — ${j.deadlines} deadline(s) extracted, ${j.validation?.length ? `${j.validation.length} quote(s) failed grounding` : "every quote grounded"}. Open Review to approve the terms.`);
+        say(`Sample loaded — ${j.deadlines} deadline(s) found. Open Check details to look them over, then approve to turn on reminders.`);
       }
     } catch (e) { say(`Connection problem: ${(e as Error).message}`); }
     setBusy("");
@@ -127,26 +140,26 @@ export default function App() {
     if (j.error) { setBusy(""); say(`That PDF didn't work: ${j.error}`); return; }
     await refreshLeases();
     setLeaseId(j.leaseId!);
-    setBusy("extracting terms — up to a minute");
+    setBusy("reading your lease — up to a minute");
     await fetch("/api/extract", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ leaseId: j.leaseId }) });
     setBusy("");
     refreshLeases(); refreshState(j.leaseId!);
-    say(`"${file.name}" processed. Open Review to check the terms, then approve to arm reminders.`);
+    say(`"${file.name}" processed. Open Check details to look things over, then approve to turn on reminders.`);
   };
 
   const submitReview = async () => {
     if (!state) return;
     const corrections = Object.entries(edits).map(([key, newValue]) => ({ key, newValue }));
-    setBusy("approving + arming");
+    setBusy("turning reminders on");
     try {
       const r = await fetch("/api/review", {
         method: "POST", headers: { "content-type": "application/json" },
         body: JSON.stringify({ leaseId, corrections, mode: armMode }),
       });
       const j = await r.json();
-      if (j.error) say(`Arm failed: ${j.error}`);
-      else say(`Approved with ${corrections.length} correction(s). ${j.armed} deadline(s) armed` +
-        (j.mode === "demo" ? ` — first alert lands in ~${j.firstFireSec}s. Watch Alerts.` : " on the real 90/30/7-day schedule."));
+      if (j.error) say(`Couldn't turn reminders on: ${j.error}`);
+      else say(`Approved with ${corrections.length} change(s). ${j.armed} deadline(s) armed` +
+        (j.mode === "demo" ? ` — first alert lands in about ${j.firstFireSec} seconds. Watch Alerts.` : " on the real 90/30/7-day schedule."));
       setTab("deadlines");
     } catch (e) { say(`Connection problem: ${(e as Error).message}`); }
     setBusy("");
@@ -155,56 +168,60 @@ export default function App() {
 
   const decideDraft = async (draftId: number, action: "approve" | "discard") => {
     await fetch("/api/drafts", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ draftId, action }) });
-    say(action === "approve" ? "Letter approved — ready to send." : "Letter discarded.");
+    say(action === "approve" ? "Letter approved — ready to send." : "Letter thrown away.");
     refreshState(leaseId);
   };
 
   const tabs: Array<{ id: Tab; label: string; icon: typeof MessageSquare; badge?: number }> = [
-    { id: "chat", label: "Concierge", icon: MessageSquare },
-    { id: "review", label: "Review", icon: ListChecks, badge: unapproved.length || undefined },
+    { id: "chat", label: "Chat", icon: MessageSquare },
+    { id: "review", label: "Check details", icon: ListChecks, badge: unapproved.length || undefined },
     { id: "deadlines", label: "Deadlines", icon: CalendarClock },
     { id: "alerts", label: "Alerts", icon: Bell, badge: pendingDrafts.length || undefined },
   ];
 
   return (
-    <div className="app">
+    <div className={`app ${collapsed ? "railcollapsed" : ""}`}>
       <aside className="rail">
-        <Link href="/" className="brand">
-          <svg viewBox="0 0 64 64" width="24" height="24" aria-hidden>
-            <rect width="64" height="64" rx="14" fill="#1f2830" />
-            <path d="M32 12c-8.3 0-14 6.2-14 14v9l-4 7h36l-4-7v-9c0-7.8-5.7-14-14-14z" fill="none" stroke="#4cc38a" strokeWidth="4" strokeLinejoin="round" />
-            <path d="M26 46a6 6 0 0 0 12 0" fill="none" stroke="#4cc38a" strokeWidth="4" strokeLinecap="round" />
-            <path d="M24 28l6 6 11-11" fill="none" stroke="#e6edf3" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          Tickler
-        </Link>
+        <div className="railtop">
+          <Link href="/" className="brand" title="Back to home">
+            <svg viewBox="0 0 64 64" width="24" height="24" aria-hidden>
+              <rect width="64" height="64" rx="14" fill="#1f2830" />
+              <path d="M32 12c-8.3 0-14 6.2-14 14v9l-4 7h36l-4-7v-9c0-7.8-5.7-14-14-14z" fill="none" stroke="#4cc38a" strokeWidth="4" strokeLinejoin="round" />
+              <path d="M26 46a6 6 0 0 0 12 0" fill="none" stroke="#4cc38a" strokeWidth="4" strokeLinecap="round" />
+              <path d="M24 28l6 6 11-11" fill="none" stroke="#e6edf3" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span>Tickler</span>
+          </Link>
+          <button className="iconbtn" onClick={toggleRail} title={collapsed ? "Expand sidebar" : "Collapse sidebar"} aria-label="Toggle sidebar">
+            {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+          </button>
+        </div>
 
         <nav className="railnav">
           {tabs.map(t => (
-            <button key={t.id} className={`railitem ${tab === t.id ? "active" : ""}`} onClick={() => setTab(t.id)}>
+            <button key={t.id} className={`railitem ${tab === t.id ? "active" : ""}`} onClick={() => setTab(t.id)}
+              title={t.label}>
               <t.icon size={17} strokeWidth={1.8} />
-              <span>{t.label}</span>
-              {t.badge ? <em>{t.badge}</em> : null}
+              {!collapsed && <span>{t.label}</span>}
+              {t.badge ? <em>{collapsed ? "•" : t.badge}</em> : null}
             </button>
           ))}
         </nav>
 
-        <div className="railfoot">
-          <div className="progress">
-            <div className="progress-label">
-              <span>Setup</span>
-              <b>{doneCount}/4</b>
+        {!collapsed && (
+          <div className="railfoot">
+            <div className="progress">
+              <div className="progress-label"><span>Setup</span><b>{doneCount}/4</b></div>
+              <div className="progress-track"><div style={{ width: `${(doneCount / 4) * 100}%` }} /></div>
+              {(() => {
+                const next = steps.findIndex(s => !s.done);
+                return next === -1
+                  ? <p className="nextdone">all set ✓</p>
+                  : <p className="next">next: {steps[next].label.toLowerCase()}</p>;
+              })()}
             </div>
-            <div className="progress-track"><div style={{ width: `${(doneCount / 4) * 100}%` }} /></div>
-            {nextStepHint(steps)}
           </div>
-          <div className="railtech">
-            <span>graph · FalkorDB</span>
-            <span>timers · Temporal</span>
-            <span>models · open weights</span>
-            <a href="https://github.com/abubakar-ahmed-dev/tickler" target="_blank" rel="noreferrer">GitHub ↗</a>
-          </div>
-        </div>
+        )}
       </aside>
 
       <div className="work">
@@ -219,18 +236,12 @@ export default function App() {
           </select>
           {current && <span className={`badge ${STATUS_LABEL[current.status]?.cls ?? ""}`}>{STATUS_LABEL[current.status]?.label ?? current.status}</span>}
           <span className="spacer" />
-          <button className="btn ghost" onClick={loadSample} disabled={!!busy}><Sparkles size={15} /> Sample lease</button>
-          <label className="btn ghost">
-            <Upload size={15} /> Upload PDF
-            <input type="file" accept="application/pdf" style={{ display: "none" }} aria-label="Upload a lease PDF"
-              onChange={e => e.target.files?.[0] && upload(e.target.files[0])} />
-          </label>
           {busy && <span className="badge warn">{busy}…</span>}
         </div>
 
         {unapproved.length > 0 && leaseId && tab !== "review" && (
           <button className="nudge" onClick={() => setTab("review")}>
-            <Zap size={14} /> {unapproved.length} terms waiting on your review — nothing arms until you approve. <b>Open Review <ArrowRight size={12} /></b>
+            <Zap size={14} /> {unapproved.length} details need your review — reminders stay off until you approve. <b>Open Check details <ArrowRight size={12} /></b>
           </button>
         )}
 
@@ -239,11 +250,11 @@ export default function App() {
             <div className="log" ref={logRef}>
               {chat.map((m, i) => (
                 <div key={i} className={`msg ${m.who}`}>
-                  {m.who === "bot" && m.tools && <div className="tools">tools: {m.tools.join(" → ")}</div>}
+                  {m.who === "bot" && m.tools && <div className="tools">steps taken: {m.tools.join(" → ")}</div>}
                   {m.text}
                   {m.citations?.map((c, k) => (
                     <span className="cite" key={k}>
-                      <b>why: </b>{c.chain.map(s => s.detail).join("  →  ")}
+                      <b>where it came from: </b>{c.chain.map(s => s.detail).join("  →  ")}
                     </span>
                   ))}
                 </div>
@@ -253,7 +264,7 @@ export default function App() {
             {chat.length <= 1 && !thinking && (
               <div className="empty">
                 <Sparkles size={26} />
-                <p>Ask about deadlines, request a letter, or say a preference —<br />I&apos;ll answer with the lease sentence in hand.</p>
+                <p>Ask about deadlines, request a letter, or tell me how you like things done —<br />I&apos;ll answer with the lease sentence in hand.</p>
                 <div className="startergrid">
                   {STARTERS.map(s => (
                     <button key={s.text} className="startercard" onClick={() => send(s.text)} disabled={!leaseId}>
@@ -262,16 +273,24 @@ export default function App() {
                     </button>
                   ))}
                 </div>
-                {!leaseId && <p className="hint">load a lease first — sample works great</p>}
+                {!leaseId && <p className="hint">load a lease first — the sample works great</p>}
               </div>
             )}
             <div className="askbar">
+              <label className="btn icon" title="Upload a lease PDF">
+                <Upload size={16} />
+                <input type="file" accept="application/pdf" style={{ display: "none" }} aria-label="Upload a lease PDF"
+                  onChange={e => e.target.files?.[0] && upload(e.target.files[0])} />
+              </label>
+              <button className="btn icon" onClick={loadSample} disabled={!!busy} title="Load a sample lease">
+                <Sparkles size={16} />
+              </button>
               <input
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && send()}
-                placeholder="Ask about deadlines, why a reminder exists, request a letter…"
-                aria-label="Ask the Concierge"
+                placeholder="Ask about your leases…"
+                aria-label="Ask about your leases"
               />
               <button className="btn primary" onClick={() => send()} disabled={thinking || !input.trim()}>Send</button>
             </div>
@@ -282,20 +301,20 @@ export default function App() {
           <section className="stage">
             <div className="stagehead">
               <div>
-                <h2>Review the terms</h2>
-                <p className="hint">Each term shows the sentence it came from. Edit anything wrong — your fixes are remembered. Reminders arm only after you approve.</p>
+                <h2>Check the details</h2>
+                <p className="hint">Each detail shows the sentence it came from. Fix anything wrong — your fixes are remembered. Reminders only start after you approve.</p>
               </div>
               {unapproved.length > 0 && <span className="badge warn">{unapproved.length} waiting on you</span>}
               {unapproved.length === 0 && <span className="badge ok">approved</span>}
             </div>
             <div className="scroller">
-              {!state && <div className="empty"><ListChecks size={26} /><p>select a lease to review its terms</p></div>}
+              {!state && <div className="empty"><ListChecks size={26} /><p>select a lease to check its details</p></div>}
               {state && unapproved.length === 0 && (
                 <div className="empty">
                   <ShieldCheck size={26} />
-                  <p>every term approved{state.lease?.status === "armed" ? " — reminders are running." : " — arm them to finish setup."}</p>
+                  <p>everything approved{state.lease?.status === "armed" ? " — reminders are running." : " — turn reminders on to finish setup."}</p>
                   {state.lease?.status !== "armed" && (
-                    <button className="btn primary" onClick={submitReview} disabled={!!busy}>Arm reminders now</button>
+                    <button className="btn primary" onClick={submitReview} disabled={!!busy}>Turn on reminders</button>
                   )}
                 </div>
               )}
@@ -309,10 +328,10 @@ export default function App() {
                   <input className="fieldinput" aria-label={`value for ${f.key}`}
                     value={f.value === "unknown" && edits[f.key] === undefined ? "" : edits[f.key] ?? f.value}
                     onChange={e => setEdits(s => ({ ...s, [f.key]: e.target.value }))}
-                    placeholder={f.value === "unknown" ? "not stated in the lease" : f.value} />
+                    placeholder={f.value === "unknown" ? "not written in the lease" : f.value} />
                   {f.quote
                     ? <div className="fsource"><Quote size={12} /> “{f.quote.slice(0, 170)}” <span>— page {(f.page ?? 0) + 1}</span></div>
-                    : <div className="fsource none">no source sentence — {f.value === "unknown" ? "not stated in the lease" : "set by you"}</div>}
+                    : <div className="fsource none">no source sentence — {f.value === "unknown" ? "not written in the lease" : "set by you"}</div>}
                 </div>
               ))}
               {unapproved.length > 0 && (
@@ -320,7 +339,7 @@ export default function App() {
                   <div className="armmodes">
                     <label className={armMode === "demo" ? "on" : ""}>
                       <input type="radio" name="arm" checked={armMode === "demo"} onChange={() => setArmMode("demo")} />
-                      <div><b>Demo speed</b><span>alerts fire in ~24s — watch them land live</span></div>
+                      <div><b>Demo speed</b><span>alerts land in about 24 seconds — watch them live</span></div>
                     </label>
                     <label className={armMode === "real" ? "on" : ""}>
                       <input type="radio" name="arm" checked={armMode === "real"} onChange={() => setArmMode("real")} />
@@ -328,7 +347,7 @@ export default function App() {
                     </label>
                   </div>
                   <button className="btn primary big" onClick={submitReview} disabled={!!busy}>
-                    Approve &amp; arm reminders <ArrowRight size={15} />
+                    Approve &amp; turn on reminders <ArrowRight size={15} />
                   </button>
                 </div>
               )}
@@ -341,13 +360,13 @@ export default function App() {
             <div className="stagehead">
               <div>
                 <h2>Deadlines</h2>
-                <p className="hint">Computed in code from the approved terms. Reminders fire on their own — no action needed once armed.</p>
+                <p className="hint">These come straight from the details you approved. Reminders fire on their own — nothing for you to do once they&apos;re on.</p>
               </div>
-              {scheduledCount > 0 && <span className="badge ok">{scheduledCount} timers running</span>}
+              {scheduledCount > 0 && <span className="badge ok">{scheduledCount} reminders running</span>}
             </div>
             <div className="scroller">
               {!state && <div className="empty"><CalendarClock size={26} /><p>select a lease to see its deadlines</p></div>}
-              {state?.deadlines.length === 0 && <div className="empty"><CalendarClock size={26} /><p>no deadlines yet — approve the terms first</p></div>}
+              {state?.deadlines.length === 0 && <div className="empty"><CalendarClock size={26} /><p>no deadlines yet — check the details first</p></div>}
               {state?.deadlines.map(d => (
                 <div className="deadlinecard" key={d.type + d.date}>
                   <div className="dl-left">
@@ -359,10 +378,10 @@ export default function App() {
                     {d.needsReview
                       ? <span className="badge bad">needs your look</span>
                       : d.reminders.filter(Boolean).length > 0
-                        ? <span className="badge ok">{d.reminders.filter(Boolean).length} reminders armed</span>
+                        ? <span className="badge ok">{d.reminders.filter(Boolean).length} reminders on</span>
                         : state.lease?.status === "armed"
-                          ? <span className="badge">armed</span>
-                          : <span className="badge">not armed yet</span>}
+                          ? <span className="badge">on</span>
+                          : <span className="badge">not on yet</span>}
                   </div>
                 </div>
               ))}
@@ -375,9 +394,9 @@ export default function App() {
             <div className="stagehead">
               <div>
                 <h2>Alerts &amp; letters</h2>
-                <p className="hint">The Watcher decides when each timer fires: snooze, heads-up, or escalate into a drafted letter. Letters wait for your call.</p>
+                <p className="hint">When a reminder fires, the helper decides: wait, give a heads-up, or draft a letter. Letters always wait for your approval.</p>
               </div>
-              {pendingDrafts.length > 0 && <span className="badge warn">{pendingDrafts.length} letter{pendingDrafts.length > 1 ? "s" : ""} pending</span>}
+              {pendingDrafts.length > 0 && <span className="badge warn">{pendingDrafts.length} letter{pendingDrafts.length > 1 ? "s" : ""} waiting</span>}
             </div>
             <div className="scroller">
               {!state && <div className="empty"><Bell size={26} /><p>select a lease to see its alerts</p></div>}
@@ -385,23 +404,23 @@ export default function App() {
                 <div className="empty">
                   <Bell size={26} />
                   <p>{scheduledCount > 0
-                    ? `${scheduledCount} reminder timers running — the first alert lands shortly (demo mode). This page updates live.`
-                    : "No alerts yet. Arm reminders and they appear here as they fire."}</p>
+                    ? `${scheduledCount} reminders running — the first alert lands shortly (demo speed). This page updates by itself.`
+                    : "No alerts yet. Turn reminders on and they show up here as they fire."}</p>
                 </div>
               )}
               {state?.alerts.map(a => (
                 <div className={`alertcard ${a.action}`} key={a.alertId}>
                   <div className="alerttop">
                     <span className={`badge ${a.action === "escalate" ? "bad" : a.action === "alert" ? "warn" : ""}`}>
-                      {a.action === "escalate" ? "urgent → letter drafted" : a.action === "alert" ? "heads up" : "snoozed"}
+                      {a.action === "escalate" ? "urgent → letter written" : a.action === "alert" ? "heads up" : "waited"}
                     </span>
                     <span className="when">{new Date(a.at).toLocaleTimeString()}</span>
                   </div>
                   <p className="amsg">{a.message}</p>
-                  {a.reason && <p className="areason">watcher: {a.reason}</p>}
+                  {a.reason && <p className="areason">why: {a.reason}</p>}
                   {a.draftId && a.draftStatus === "pending" && (
                     <div className="draftrow">
-                      <span className="badge warn">letter pending — your call</span>
+                      <span className="badge warn">letter waiting — your call</span>
                       <button className="btn ghost" onClick={() => decideDraft(a.draftId!, "approve")}>Approve letter</button>
                       <button className="btn ghost" onClick={() => decideDraft(a.draftId!, "discard")}>Discard</button>
                     </div>
@@ -415,11 +434,4 @@ export default function App() {
       </div>
     </div>
   );
-}
-
-function nextStepHint(steps: Array<{ done: boolean; label: string }>) {
-  const next = steps.findIndex(s => !s.done);
-  return next === -1
-    ? <p className="nextdone">all set ✓</p>
-    : <p className="next">next: {steps[next].label.toLowerCase()}</p>;
 }
