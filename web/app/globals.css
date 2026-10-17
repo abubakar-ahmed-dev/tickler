@@ -334,3 +334,6 @@ input[type=radio] { accent-color: var(--accent); }
 .cd-quote svg { flex: none; transform: translateY(2px); color: var(--accent); }
 .cd-quote .pg { margin-left: auto; flex: none; font-style: normal; font-size: 10.5px; color: var(--dim); border: 1px solid var(--line); border-radius: 99px; padding: 1px 8px; }
 .cd-foot { margin: 0; color: var(--dim); font-size: 11px; }
+
+.app.railcollapsed .railtop { justify-content: flex-end; }
+.iconbtn.solo { width: 36px; height: 36px; justify-content: center; background: var(--chip); }

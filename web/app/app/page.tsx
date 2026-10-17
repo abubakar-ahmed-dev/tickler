@@ -242,16 +242,18 @@ export default function App() {
     <div className={`app ${collapsed ? "railcollapsed" : ""}`}>
       <aside className="rail">
         <div className="railtop">
-          <Link href="/" className="brand" title="Back to home">
-            <svg viewBox="0 0 64 64" width="24" height="24" aria-hidden>
-              <rect width="64" height="64" rx="14" fill="#1f2830" />
-              <path d="M32 12c-8.3 0-14 6.2-14 14v9l-4 7h36l-4-7v-9c0-7.8-5.7-14-14-14z" fill="none" stroke="#4cc38a" strokeWidth="4" strokeLinejoin="round" />
-              <path d="M26 46a6 6 0 0 0 12 0" fill="none" stroke="#4cc38a" strokeWidth="4" strokeLinecap="round" />
-              <path d="M24 28l6 6 11-11" fill="none" stroke="#e6edf3" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <span>Tickler</span>
-          </Link>
-          <button className="iconbtn" onClick={toggleRail} title={collapsed ? "Expand sidebar" : "Collapse sidebar"} aria-label="Toggle sidebar">
+          {!collapsed && (
+            <Link href="/" className="brand" title="Back to home">
+              <svg viewBox="0 0 64 64" width="24" height="24" aria-hidden>
+                <rect width="64" height="64" rx="14" fill="#1f2830" />
+                <path d="M32 12c-8.3 0-14 6.2-14 14v9l-4 7h36l-4-7v-9c0-7.8-5.7-14-14-14z" fill="none" stroke="#4cc38a" strokeWidth="4" strokeLinejoin="round" />
+                <path d="M26 46a6 6 0 0 0 12 0" fill="none" stroke="#4cc38a" strokeWidth="4" strokeLinecap="round" />
+                <path d="M24 28l6 6 11-11" fill="none" stroke="#e6edf3" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span>Tickler</span>
+            </Link>
+          )}
+          <button className={`iconbtn ${collapsed ? "solo" : ""}`} onClick={toggleRail} title={collapsed ? "Expand sidebar" : "Collapse sidebar"} aria-label="Toggle sidebar">
             {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
           </button>
         </div>
