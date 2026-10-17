@@ -338,10 +338,15 @@ input[type=radio] { accent-color: var(--accent); }
 .app.railcollapsed .railtop { justify-content: flex-end; }
 .iconbtn.solo { width: 36px; height: 36px; justify-content: center; background: var(--chip); }
 
-/* non-chat pages: centered contained column, gap from rail + header */
-.pagewrap { flex: 1; min-height: 0; display: flex; flex-direction: column; max-width: 940px; width: 100%; margin: 0 auto; padding: 18px 26px 0; }
-.pagewrap .stage { padding: 18px 0 0; }
-.pagewrap .stagehead { padding: 0 4px; }
 
-/* the three non-chat stage sections are siblings of .pagewrap — center to the same column */
-.work > .stage { max-width: 940px; width: 100%; margin: 0 auto; padding: 6px 26px 16px; }
+
+/* non-chat pages: one centered column, header + scrolling content */
+.stage.page { max-width: 900px; width: 100%; margin: 0 auto; padding: 30px 26px 20px; gap: 18px; }
+.pagehead { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.pht h2 { margin: 0 0 7px; font-size: 23px; font-weight: 750; letter-spacing: -.015em; }
+.pht .hint { max-width: 560px; }
+.ph-badges { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; padding-bottom: 4px; }
+.leasetag { font-size: 11px; color: var(--dim); border: 1px solid var(--line); border-radius: 99px; padding: 2px 9px; }
+.scroller .empty { padding: 56px 20px; }
+.fsource .pg { margin-left: auto; flex: none; font-style: normal; font-size: 10.5px; color: var(--dim); border: 1px solid var(--line); border-radius: 99px; padding: 1px 8px; }
+.workingline { padding: 10px 24px 0; }

@@ -13,14 +13,6 @@ import {
 type Lease = { id: string; title: string; status: string; deadlines: number; needsReview: number };
 type Citation = { deadline: { type: string; date: string; needsReview?: boolean }; clause?: string; chain: Array<{ step: string; detail: string }> };
 type ChainStep = { step: string; detail: string };
-const firstPage = (c: Citation): number | null => {
-  for (const s of c.chain) {
-    const m = s.detail.match(/page (\d+)\)?$/i);
-    if (s.step === "quote" && m) return Number(m[1]) + 1;
-  }
-  return null;
-};
-const stripPage = (d: string) => d.replace(/\s*\(page \d+\)\s*$/i, "");
 type ChatMsg = { who: "you" | "bot" | "system"; text: string; tools?: string[]; citations?: Citation[] };
 type Field = { clause: string; key: string; value: string; confidence: number; approved: boolean; corrected: boolean; quote: string | null; page: number | null };
 type Deadline = { type: string; date: string; needsReview: boolean; reason: string; reminders: string[] };
@@ -45,6 +37,35 @@ const STARTERS = [
   { icon: FileText, text: "Write the renewal notice for this lease." },
 ];
 
+const firstPage = (c: Citation): number | null => {
+  for (const s of c.chain) {
+    const m = s.detail.match(/page (\d+)\)?$/i);
+    if (s.step === "quote" && m) return Number(m[1]) + 1;
+  }
+  return null;
+};
+const stripPage = (d: string) => d.replace(/\s*\(page \d+\)\s*$/i, "");
+
+function MiniBell() {
+  return (
+    <svg viewBox="0 0 64 64" width="15" height="15" aria-hidden>
+      <path d="M32 12c-8.3 0-14 6.2-14 14v9l-4 7h36l-4-7v-9c0-7.8-5.7-14-14-14z" fill="none" stroke="#4cc38a" strokeWidth="5" strokeLinejoin="round" />
+      <path d="M24 28l6 6 11-11" fill="none" stroke="#e6edf3" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function BrandMark() {
+  return (
+    <svg viewBox="0 0 64 64" width="24" height="24" aria-hidden>
+      <rect width="64" height="64" rx="14" fill="#1f2830" />
+      <path d="M32 12c-8.3 0-14 6.2-14 14v9l-4 7h36l-4-7v-9c0-7.8-5.7-14-14-14z" fill="none" stroke="#4cc38a" strokeWidth="4" strokeLinejoin="round" />
+      <path d="M26 46a6 6 0 0 0 12 0" fill="none" stroke="#4cc38a" strokeWidth="4" strokeLinecap="round" />
+      <path d="M24 28l6 6 11-11" fill="none" stroke="#e6edf3" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export default function App() {
   const [tab, setTab] = useState<Tab>("chat");
   const [collapsed, setCollapsed] = useState(false);
@@ -59,24 +80,15 @@ export default function App() {
   const [edits, setEdits] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState("");
   const [armMode, setArmMode] = useState<"demo" | "real">("demo");
-  const [openCites, setOpenCites] = useState<Record<number, number | undefined>>({});
   const [menuWhere, setMenuWhere] = useState<"none" | "ask" | "side">("none");
   const [leasesOpen, setLeasesOpen] = useState(true);
+  const [openCites, setOpenCites] = useState<Record<number, number | undefined>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logRef = useRef<HTMLDivElement>(null);
 
-  const toggleLeases = () => {
-    setLeasesOpen(o => {
-      window.localStorage.setItem("tickler-leases", o ? "closed" : "open");
-      return !o;
-    });
-  };
-
   useEffect(() => {
-    const saved = window.localStorage.getItem("tickler-rail");
-    if (saved === "collapsed") setCollapsed(true);
-    const leases = window.localStorage.getItem("tickler-leases");
-    if (leases === "closed") setLeasesOpen(false);
+    if (window.localStorage.getItem("tickler-rail") === "collapsed") setCollapsed(true);
+    if (window.localStorage.getItem("tickler-leases") === "closed") setLeasesOpen(false);
   }, []);
   const toggleRail = () => {
     setCollapsed(c => {
@@ -84,8 +96,13 @@ export default function App() {
       return !c;
     });
   };
+  const toggleLeases = () => {
+    setLeasesOpen(o => {
+      window.localStorage.setItem("tickler-leases", o ? "closed" : "open");
+      return !o;
+    });
+  };
 
-  // close the attach menu on outside click (two anchors: askbar 📎 + sidebar "Add lease")
   useEffect(() => {
     if (menuWhere === "none") return;
     const close = (e: MouseEvent) => {
@@ -124,18 +141,12 @@ export default function App() {
   const pendingDrafts = state?.alerts.filter(a => a.draftId && a.draftStatus === "pending") ?? [];
 
   const steps = [
-    { done: leases.length > 0, label: "Load a lease" },
-    { done: !!state && unapproved.length === 0, label: "Check the details" },
-    { done: state?.lease?.status === "armed", label: "Turn on reminders" },
-    { done: (state?.alerts.length ?? 0) > 0, label: "See alerts" },
+    { done: leases.length > 0, label: "Load" },
+    { done: !!state && unapproved.length === 0, label: "Check" },
+    { done: state?.lease?.status === "armed", label: "Remind" },
+    { done: (state?.alerts.length ?? 0) > 0, label: "Alerts" },
   ];
   const doneCount = steps.filter(s => s.done).length;
-
-  const pickLease = (id: string) => {
-    setLeaseId(id);
-    if (tab === "chat") return;
-    // stay on the user's tab; the stage follows the selected lease
-  };
 
   const send = async (raw?: string) => {
     const q = (raw ?? input).trim();
@@ -224,7 +235,7 @@ export default function App() {
     { id: "alerts", label: "Alerts", icon: Bell, badge: pendingDrafts.length || undefined },
   ];
 
-  const attachMenu = (anchor: "ask" | "side") => (
+  const attachMenu = (
     <div className="attachmenu">
       <button onClick={() => fileInputRef.current?.click()}>
         <Upload size={15} /> Upload a lease PDF
@@ -232,7 +243,7 @@ export default function App() {
       <button onClick={loadSample}>
         <Sparkles size={15} /> Try a sample lease
       </button>
-      <input ref={anchor === "ask" ? fileInputRef : undefined} type="file" accept="application/pdf"
+      <input ref={fileInputRef} type="file" accept="application/pdf"
         style={{ display: "none" }} aria-label="Upload a lease PDF"
         onChange={e => e.target.files?.[0] && upload(e.target.files[0])} />
     </div>
@@ -244,16 +255,12 @@ export default function App() {
         <div className="railtop">
           {!collapsed && (
             <Link href="/" className="brand" title="Back to home">
-              <svg viewBox="0 0 64 64" width="24" height="24" aria-hidden>
-                <rect width="64" height="64" rx="14" fill="#1f2830" />
-                <path d="M32 12c-8.3 0-14 6.2-14 14v9l-4 7h36l-4-7v-9c0-7.8-5.7-14-14-14z" fill="none" stroke="#4cc38a" strokeWidth="4" strokeLinejoin="round" />
-                <path d="M26 46a6 6 0 0 0 12 0" fill="none" stroke="#4cc38a" strokeWidth="4" strokeLinecap="round" />
-                <path d="M24 28l6 6 11-11" fill="none" stroke="#e6edf3" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <BrandMark />
               <span>Tickler</span>
             </Link>
           )}
-          <button className={`iconbtn ${collapsed ? "solo" : ""}`} onClick={toggleRail} title={collapsed ? "Expand sidebar" : "Collapse sidebar"} aria-label="Toggle sidebar">
+          <button className={`iconbtn ${collapsed ? "solo" : ""}`} onClick={toggleRail}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"} aria-label="Toggle sidebar">
             {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
           </button>
         </div>
@@ -281,8 +288,7 @@ export default function App() {
             </button>
           )}
           {collapsed && (
-            <button className="railitem" title={`Your leases (${leases.length}) — click to expand`}
-              onClick={toggleRail}>
+            <button className="railitem" title={`Your leases (${leases.length}) — click to expand`} onClick={toggleRail}>
               <Folder size={17} strokeWidth={1.8} />
               {leases.some(l => l.needsReview) ? <em>•</em> : null}
             </button>
@@ -293,7 +299,7 @@ export default function App() {
               <div className="leaselist">
                 {leases.map(l => (
                   <button key={l.id} className={`leaserow ${leaseId === l.id ? "active" : ""}`}
-                    onClick={() => pickLease(l.id)}
+                    onClick={() => setLeaseId(l.id)}
                     title={`${l.id} — ${STATUS_LABEL[l.status]?.label ?? l.status}${l.needsReview ? ` · ${l.needsReview} deadline(s) need review` : ""}`}>
                     <CircleDot size={12} className={`dot ${STATUS_DOT[l.status] ?? ""}`} />
                     <span className="leasename">
@@ -307,7 +313,7 @@ export default function App() {
                 <button className="railitem addlease" onClick={() => setMenuWhere(w => (w === "side" ? "none" : "side"))}>
                   <Plus size={15} /> <span>Add lease</span>
                 </button>
-                {menuWhere === "side" && attachMenu("side")}
+                {menuWhere === "side" && attachMenu}
               </div>
             </>
           )}
@@ -320,11 +326,10 @@ export default function App() {
             </p>
             <div className="stepper">
               {steps.map((s, i) => (
-                <div className={`step ${s.done ? "done" : ""} ${i === steps.findIndex(x => !x.done) ? "next" : ""}`} key={s.label}
-                  title={s.label}>
+                <div className={`step ${s.done ? "done" : ""} ${i === steps.findIndex(x => !x.done) ? "next" : ""}`} key={s.label} title={s.label}>
                   <div className="stepline" />
                   <div className="stepdot">{s.done ? <Check size={10} /> : i + 1}</div>
-                  <div className="steplabel">{s.label.split(" ")[0]}</div>
+                  <div className="steplabel">{s.label}</div>
                 </div>
               ))}
             </div>
@@ -333,6 +338,14 @@ export default function App() {
       </aside>
 
       <div className="work">
+        {busy && <div className="workingline"><span className="badge warn">{busy}…</span></div>}
+        {unapproved.length > 0 && leaseId && tab !== "chat" && tab !== "review" && (
+          <button className="nudge" onClick={() => setTab("review")}>
+            <Zap size={14} /> {unapproved.length} details need your review — reminders stay off until you approve. <b>Open Check details <ArrowRight size={12} /></b>
+          </button>
+        )}
+
+        {/* ============ CHAT ============ */}
         {tab === "chat" && (
           <section className="stage chatstage">
             {leaseId && state && (
@@ -347,14 +360,7 @@ export default function App() {
                   <div key={i} className="msg system">{m.text}</div>
                 ) : (
                   <div key={i} className={`msgrow ${m.who}`}>
-                    {m.who === "bot" && (
-                      <div className="avatar bot" title="Tickler">
-                        <svg viewBox="0 0 64 64" width="15" height="15" aria-hidden>
-                          <path d="M32 12c-8.3 0-14 6.2-14 14v9l-4 7h36l-4-7v-9c0-7.8-5.7-14-14-14z" fill="none" stroke="#4cc38a" strokeWidth="5" strokeLinejoin="round" />
-                          <path d="M24 28l6 6 11-11" fill="none" stroke="#e6edf3" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </div>
-                    )}
+                    {m.who === "bot" && <div className="avatar bot" title="Tickler"><MiniBell /></div>}
                     <div className="msgcol">
                       <div className={`bubble ${m.who}`}>
                         {m.who === "bot" && m.tools && <div className="tools">steps taken: {m.tools.join(" → ")}</div>}
@@ -384,7 +390,7 @@ export default function App() {
                                   <>
                                     <div className="cd-top">
                                       <span className="cd-label">Sources</span>
-                                      <span className="clausechip">{(c.clause ?? "lease").replace(/_/g, " ")}</span>
+                                      {c.clause && <span className="clausechip">{c.clause.replace(/_/g, " ")}</span>}
                                       <span className="badge">{c.deadline.date}</span>
                                       {c.deadline.needsReview && <span className="badge bad">needs your look</span>}
                                     </div>
@@ -398,7 +404,7 @@ export default function App() {
                                         </div>
                                       );
                                     }) : (
-                                      <p className="cd-step">no quoted sentence — this value came from your own edit or isn't written in the lease.</p>
+                                      <p className="cd-step">no quoted sentence — this value came from your own edit or isn&apos;t written in the lease.</p>
                                     )}
                                     <p className="cd-foot">the date itself is computed in code from the details you approved</p>
                                   </>
@@ -409,9 +415,7 @@ export default function App() {
                         </>
                       )}
                     </div>
-                    {m.who === "you" && (
-                      <div className="avatar you" title="You"><User size={13} /></div>
-                    )}
+                    {m.who === "you" && <div className="avatar you" title="You"><User size={13} /></div>}
                   </div>
                 )
               )}
@@ -439,7 +443,7 @@ export default function App() {
                   title="Add a lease: upload your own or try a sample" aria-label="Add a lease">
                   <Paperclip size={16} />
                 </button>
-                {menuWhere === "ask" && attachMenu("ask")}
+                {menuWhere === "ask" && attachMenu}
               </div>
               <input
                 value={input}
@@ -454,143 +458,159 @@ export default function App() {
           </section>
         )}
 
-        {tab !== "chat" && (
-          <div className="pagewrap">
-            <div className="stagehead">
-              <div>
-                <h2>{tab === "review" ? "Check the details" : tab === "deadlines" ? "Deadlines" : "Alerts & letters"}</h2>
-                <p className="hint">
-                  {tab === "review" && "Each detail shows the sentence it came from. Fix anything wrong — your fixes are remembered. Reminders only start after you approve."}
-                  {tab === "deadlines" && "These come straight from the details you approved. Reminders fire on their own — nothing for you to do once they're on."}
-                  {tab === "alerts" && "When a reminder fires, the helper decides: wait, give a heads-up, or draft a letter. Letters always wait for your approval."}
-                </p>
+        {/* ============ CHECK DETAILS ============ */}
+        {tab === "review" && (
+          <section className="stage page">
+            <header className="pagehead">
+              <div className="pht">
+                <h2>Check The Details</h2>
+                <p className="hint">Each detail shows the sentence it came from. Fix anything wrong — your fixes are remembered. Reminders only start after you approve.</p>
               </div>
-              <div className="headright">
+              <div className="ph-badges">
                 {leaseId && <span className="leasetag">{leaseId}</span>}
-                {state && <span className={`badge ${STATUS_LABEL[state.lease.status]?.cls ?? ""}`}>{STATUS_LABEL[state.lease.status]?.label}</span>}
-                {busy && <span className="badge warn">{busy}…</span>}
-                {tab === "review" && unapproved.length > 0 && <span className="badge warn">{unapproved.length} waiting on you</span>}
-                {tab === "review" && unapproved.length === 0 && state && <span className="badge ok">approved</span>}
-                {tab === "deadlines" && scheduledCount > 0 && <span className="badge ok">{scheduledCount} reminders running</span>}
-                {tab === "alerts" && pendingDrafts.length > 0 && <span className="badge warn">{pendingDrafts.length} letter{pendingDrafts.length > 1 ? "s" : ""} waiting</span>}
+                {state && unapproved.length === 0 && <span className="badge ok">approved</span>}
+                {unapproved.length > 0 && <span className="badge warn">{unapproved.length} waiting on you</span>}
               </div>
-            </div>
-            {!leaseId && (
-              <div className="empty">
-                {tab === "review" ? <ListChecks size={26} /> : tab === "deadlines" ? <CalendarClock size={26} /> : <Bell size={26} />}
-                <p>no lease selected — use <b>📎 Add lease</b> in the sidebar</p>
+            </header>
+            {!leaseId ? (
+              <div className="empty"><ListChecks size={26} /><p>no lease selected — use <b>📎 Add lease</b> in the sidebar</p></div>
+            ) : (
+              <div className="scroller">
+                {unapproved.length === 0 && (
+                  <div className="empty">
+                    <ShieldCheck size={26} />
+                    <p>everything approved{state?.lease?.status === "armed" ? " — reminders are running." : " — turn reminders on to finish setup."}</p>
+                    {state?.lease?.status !== "armed" && (
+                      <button className="btn primary" onClick={submitReview} disabled={!!busy}>Turn on reminders</button>
+                    )}
+                  </div>
+                )}
+                {unapproved.map(f => (
+                  <div className="fieldcard" key={`${f.clause}-${f.key}-${f.page ?? "x"}`}>
+                    <div className="fieldtop">
+                      <span className="fkey">{f.key.replace(/_/g, " ")}</span>
+                      <span className="clausechip">{f.clause.replace(/_/g, " ")}</span>
+                      <span className="badge">{Math.round((f.confidence ?? 0) * 100)}% sure</span>
+                    </div>
+                    <input className="fieldinput" aria-label={`value for ${f.key}`}
+                      value={f.value === "unknown" && edits[f.key] === undefined ? "" : edits[f.key] ?? f.value}
+                      onChange={e => setEdits(s => ({ ...s, [f.key]: e.target.value }))}
+                      placeholder={f.value === "unknown" ? "not written in the lease" : f.value} />
+                    {f.quote
+                      ? <div className="fsource"><Quote size={12} /> <span>“{f.quote.slice(0, 170)}”</span> <span className="pg">page {(f.page ?? 0) + 1}</span></div>
+                      : <div className="fsource none">no source sentence — {f.value === "unknown" ? "not written in the lease" : "set by you"}</div>}
+                  </div>
+                ))}
+                {unapproved.length > 0 && (
+                  <div className="armbox">
+                    <div className="armmodes">
+                      <label className={armMode === "demo" ? "on" : ""}>
+                        <input type="radio" name="arm" checked={armMode === "demo"} onChange={() => setArmMode("demo")} />
+                        <div><b>Demo speed</b><span>alerts land in about 24 seconds — watch them live</span></div>
+                      </label>
+                      <label className={armMode === "real" ? "on" : ""}>
+                        <input type="radio" name="arm" checked={armMode === "real"} onChange={() => setArmMode("real")} />
+                        <div><b>Real schedule</b><span>90 / 30 / 7 days before each deadline</span></div>
+                      </label>
+                    </div>
+                    <button className="btn primary big" onClick={submitReview} disabled={!!busy}>
+                      Approve &amp; turn on reminders <ArrowRight size={15} />
+                    </button>
+                  </div>
+                )}
               </div>
             )}
-          </div>
-        )}
-
-        {tab === "review" && leaseId && (
-          <section className="stage">
-            <div className="scroller">
-              {unapproved.length === 0 && (
-                <div className="empty">
-                  <ShieldCheck size={26} />
-                  <p>everything approved{state?.lease?.status === "armed" ? " — reminders are running." : " — turn reminders on to finish setup."}</p>
-                  {state?.lease?.status !== "armed" && (
-                    <button className="btn primary" onClick={submitReview} disabled={!!busy}>Turn on reminders</button>
-                  )}
-                </div>
-              )}
-              {unapproved.map(f => (
-                <div className="fieldcard" key={`${f.clause}-${f.key}-${f.page ?? "x"}`}>
-                  <div className="fieldtop">
-                    <span className="fkey">{f.key.replace(/_/g, " ")}</span>
-                    <span className="clausechip">{f.clause.replace(/_/g, " ")}</span>
-                    <span className="badge">{Math.round((f.confidence ?? 0) * 100)}% sure</span>
-                  </div>
-                  <input className="fieldinput" aria-label={`value for ${f.key}`}
-                    value={f.value === "unknown" && edits[f.key] === undefined ? "" : edits[f.key] ?? f.value}
-                    onChange={e => setEdits(s => ({ ...s, [f.key]: e.target.value }))}
-                    placeholder={f.value === "unknown" ? "not written in the lease" : f.value} />
-                  {f.quote
-                    ? <div className="fsource"><Quote size={12} /> “{f.quote.slice(0, 170)}” <span>— page {(f.page ?? 0) + 1}</span></div>
-                    : <div className="fsource none">no source sentence — {f.value === "unknown" ? "not written in the lease" : "set by you"}</div>}
-                </div>
-              ))}
-              {unapproved.length > 0 && (
-                <div className="armbox">
-                  <div className="armmodes">
-                    <label className={armMode === "demo" ? "on" : ""}>
-                      <input type="radio" name="arm" checked={armMode === "demo"} onChange={() => setArmMode("demo")} />
-                      <div><b>Demo speed</b><span>alerts land in about 24 seconds — watch them live</span></div>
-                    </label>
-                    <label className={armMode === "real" ? "on" : ""}>
-                      <input type="radio" name="arm" checked={armMode === "real"} onChange={() => setArmMode("real")} />
-                      <div><b>Real schedule</b><span>90 / 30 / 7 days before each deadline</span></div>
-                    </label>
-                  </div>
-                  <button className="btn primary big" onClick={submitReview} disabled={!!busy}>
-                    Approve &amp; turn on reminders <ArrowRight size={15} />
-                  </button>
-                </div>
-              )}
-            </div>
           </section>
         )}
 
-        {tab === "deadlines" && leaseId && (
-          <section className="stage">
-            <div className="scroller">
-              {state?.deadlines.length === 0 && <div className="empty"><CalendarClock size={26} /><p>no deadlines yet — check the details first</p></div>}
-              {state?.deadlines.map(d => (
-                <div className="deadlinecard" key={d.type + d.date}>
-                  <div className="dl-left">
-                    <span className="dl-type">{d.type.replace(/_/g, " ")}</span>
-                    <b className={d.date === "unknown" ? "dim" : ""}>{d.date === "unknown" ? "date unknown" : d.date}</b>
-                    {d.needsReview && d.reason && <span className="dl-reason">{d.reason}</span>}
-                  </div>
-                  <div className="dl-right">
-                    {d.needsReview
-                      ? <span className="badge bad">needs your look</span>
-                      : d.reminders.filter(Boolean).length > 0
-                        ? <span className="badge ok">{d.reminders.filter(Boolean).length} reminders on</span>
-                        : state.lease?.status === "armed"
-                          ? <span className="badge">on</span>
-                          : <span className="badge">not on yet</span>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {tab === "alerts" && leaseId && (
-          <section className="stage">
-            <div className="scroller">
-              {state && state.alerts.length === 0 && (
-                <div className="empty">
-                  <Bell size={26} />
-                  <p>{scheduledCount > 0
-                    ? `${scheduledCount} reminders running — the first alert lands shortly (demo speed). This page updates by itself.`
-                    : "No alerts yet. Turn reminders on and they show up here as they fire."}</p>
-                </div>
-              )}
-              {state?.alerts.map(a => (
-                <div className={`alertcard ${a.action}`} key={a.alertId}>
-                  <div className="alerttop">
-                    <span className={`badge ${a.action === "escalate" ? "bad" : a.action === "alert" ? "warn" : ""}`}>
-                      {a.action === "escalate" ? "urgent → letter written" : a.action === "alert" ? "heads up" : "waited"}
-                    </span>
-                    <span className="when">{new Date(a.at).toLocaleTimeString()}</span>
-                  </div>
-                  <p className="amsg">{a.message}</p>
-                  {a.reason && <p className="areason">why: {a.reason}</p>}
-                  {a.draftId && a.draftStatus === "pending" && (
-                    <div className="draftrow">
-                      <span className="badge warn">letter waiting — your call</span>
-                      <button className="btn ghost" onClick={() => decideDraft(a.draftId!, "approve")}>Approve letter</button>
-                      <button className="btn ghost" onClick={() => decideDraft(a.draftId!, "discard")}>Discard</button>
+        {/* ============ DEADLINES ============ */}
+        {tab === "deadlines" && (
+          <section className="stage page">
+            <header className="pagehead">
+              <div className="pht">
+                <h2>Deadlines</h2>
+                <p className="hint">Computed in code from the details you approved. Reminders fire on their own — nothing for you to do once they&apos;re on.</p>
+              </div>
+              <div className="ph-badges">
+                {leaseId && <span className="leasetag">{leaseId}</span>}
+                {scheduledCount > 0 && <span className="badge ok">{scheduledCount} reminders running</span>}
+              </div>
+            </header>
+            {!leaseId ? (
+              <div className="empty"><CalendarClock size={26} /><p>no lease selected — use <b>📎 Add lease</b> in the sidebar</p></div>
+            ) : (
+              <div className="scroller">
+                {state?.deadlines.length === 0 && <div className="empty"><CalendarClock size={26} /><p>no deadlines yet — check the details first</p></div>}
+                {state?.deadlines.map(d => (
+                  <div className="deadlinecard" key={d.type + d.date}>
+                    <div className="dl-left">
+                      <span className="dl-type">{d.type.replace(/_/g, " ")}</span>
+                      <b className={d.date === "unknown" ? "dim" : ""}>{d.date === "unknown" ? "date unknown" : d.date}</b>
+                      {d.needsReview && d.reason && <span className="dl-reason">{d.reason}</span>}
                     </div>
-                  )}
-                  {a.draftStatus && a.draftStatus !== "pending" && <p className="areason">letter {a.draftStatus}</p>}
-                </div>
-              ))}
-            </div>
+                    <div className="dl-right">
+                      {d.needsReview
+                        ? <span className="badge bad">needs your look</span>
+                        : d.reminders.filter(Boolean).length > 0
+                          ? <span className="badge ok">{d.reminders.filter(Boolean).length} reminders on</span>
+                          : state.lease?.status === "armed"
+                            ? <span className="badge">on</span>
+                            : <span className="badge">not on yet</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ============ ALERTS ============ */}
+        {tab === "alerts" && (
+          <section className="stage page">
+            <header className="pagehead">
+              <div className="pht">
+                <h2>Alerts &amp; Letters</h2>
+                <p className="hint">When a reminder fires, the helper decides: wait, give a heads-up, or write a letter. Letters always wait for your approval.</p>
+              </div>
+              <div className="ph-badges">
+                {leaseId && <span className="leasetag">{leaseId}</span>}
+                {pendingDrafts.length > 0 && <span className="badge warn">{pendingDrafts.length} letter{pendingDrafts.length > 1 ? "s" : ""} waiting</span>}
+              </div>
+            </header>
+            {!leaseId ? (
+              <div className="empty"><Bell size={26} /><p>no lease selected — use <b>📎 Add lease</b> in the sidebar</p></div>
+            ) : (
+              <div className="scroller">
+                {state && state.alerts.length === 0 && (
+                  <div className="empty">
+                    <Bell size={26} />
+                    <p>{scheduledCount > 0
+                      ? `${scheduledCount} reminders running — the first alert lands shortly (demo speed). This page updates by itself.`
+                      : "No alerts yet. Turn reminders on and they show up here as they fire."}</p>
+                  </div>
+                )}
+                {state?.alerts.map(a => (
+                  <div className={`alertcard ${a.action}`} key={a.alertId}>
+                    <div className="alerttop">
+                      <span className={`badge ${a.action === "escalate" ? "bad" : a.action === "alert" ? "warn" : ""}`}>
+                        {a.action === "escalate" ? "urgent → letter written" : a.action === "alert" ? "heads up" : "waited"}
+                      </span>
+                      <span className="when">{new Date(a.at).toLocaleTimeString()}</span>
+                    </div>
+                    <p className="amsg">{a.message}</p>
+                    {a.reason && <p className="areason">why: {a.reason}</p>}
+                    {a.draftId && a.draftStatus === "pending" && (
+                      <div className="draftrow">
+                        <span className="badge warn">letter waiting — your call</span>
+                        <button className="btn ghost" onClick={() => decideDraft(a.draftId!, "approve")}>Approve letter</button>
+                        <button className="btn ghost" onClick={() => decideDraft(a.draftId!, "discard")}>Discard</button>
+                      </div>
+                    )}
+                    {a.draftStatus && a.draftStatus !== "pending" && <p className="areason">letter {a.draftStatus}</p>}
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
         )}
       </div>
