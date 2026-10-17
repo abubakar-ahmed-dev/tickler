@@ -277,7 +277,7 @@ export default function Home() {
                   </div>
                 )}
                 {unapproved.map(f => (
-                  <div className="item" key={f.clause + f.key}>
+                  <div className="item" key={`${f.clause}-${f.key}-${f.page ?? "x"}`}>
                     <div className="row">
                       <span className="k">{f.key}</span>
                       <input className="field-edit" aria-label={`value for ${f.key}`}

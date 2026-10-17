@@ -13,9 +13,12 @@ export async function GET(req: Request) {
     `MATCH (l:Lease {id:$id}) RETURN l.id AS id, l.title AS title, l.status AS status, l.extractClean AS extractClean`,
     { params: { id: leaseId } });
 
+  // one row per FIELD — quotes aggregated to the clause so a clause with
+  // multiple quotes can't multiply field rows (React key collisions)
   const fields = await g.query(
     `MATCH (l:Lease {id:$id})-[:HAS_CLAUSE]->(c:Clause)-[:YIELDS]->(f:Field)
      OPTIONAL MATCH (c)-[:GROUNDS]->(q:Quote)
+     WITH c, f, head(collect(q)) AS q
      RETURN c.type AS clause, f.key AS key, f.value AS value, f.confidence AS confidence,
             f.approved AS approved, f.correctedByHuman AS corrected, q.text AS quote, q.pageIdx AS page
      ORDER BY c.type, f.key`,
