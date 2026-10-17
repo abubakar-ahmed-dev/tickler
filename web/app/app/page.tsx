@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 type Lease = { id: string; title: string; status: string; deadlines: number; needsReview: number };
-type Citation = { deadline: { type: string; date: string; needsReview?: boolean }; chain: Array<{ step: string; detail: string }> };
+type Citation = { deadline: { type: string; date: string; needsReview?: boolean }; clause?: string; chain: Array<{ step: string; detail: string }> };
 type ChainStep = { step: string; detail: string };
 const firstPage = (c: Citation): number | null => {
   for (const s of c.chain) {
@@ -373,18 +373,28 @@ export default function App() {
                             <div className="citecard">
                               {(() => {
                                 const c = m.citations![openCites[i]!];
+                                const quotes = c.chain.filter(s => s.step === "quote");
                                 return (
                                   <>
-                                    <p className="cd-head">
-                                      {c.deadline.type.replace(/_/g, " ")} — <b>{c.deadline.date}</b>
-                                      {c.deadline.needsReview ? " · needs your look" : ""}
-                                    </p>
-                                    {c.chain.map((s: ChainStep, k: number) =>
-                                      s.step === "quote" ? (
-                                        <p className="cd-quote" key={k}><Quote size={11} /> “{stripPage(s.detail)}”</p>
-                                      ) : (
-                                        <p className="cd-step" key={k}>{s.detail}</p>
-                                      ))}
+                                    <div className="cd-top">
+                                      <span className="cd-label">Sources</span>
+                                      <span className="clausechip">{(c.clause ?? "lease").replace(/_/g, " ")}</span>
+                                      <span className="badge">{c.deadline.date}</span>
+                                      {c.deadline.needsReview && <span className="badge bad">needs your look</span>}
+                                    </div>
+                                    {quotes.length > 0 ? quotes.map((s, k) => {
+                                      const pageM = s.detail.match(/page (\d+)\)?$/i);
+                                      return (
+                                        <div className="cd-quote" key={k}>
+                                          <Quote size={11} />
+                                          <span>“{stripPage(s.detail)}”</span>
+                                          {pageM && <span className="pg">page {Number(pageM[1]) + 1}</span>}
+                                        </div>
+                                      );
+                                    }) : (
+                                      <p className="cd-step">no quoted sentence — this value came from your own edit or isn't written in the lease.</p>
+                                    )}
+                                    <p className="cd-foot">the date itself is computed in code from the details you approved</p>
                                   </>
                                 );
                               })()}
