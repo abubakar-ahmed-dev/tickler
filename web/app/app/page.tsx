@@ -348,14 +348,23 @@ export default function App() {
         {/* ============ CHAT ============ */}
         {tab === "chat" && (
           <section className="stage chatstage">
-            {leaseId && state && (
-              <div className="leasecontext">
-                talking about <b>{leaseId}</b>
-                <span className={`badge ${STATUS_LABEL[state.lease.status]?.cls ?? ""}`}>{STATUS_LABEL[state.lease.status]?.label}</span>
+            <header className="pagehead">
+              <div className="pht">
+                <h2>Ask About Your Leases</h2>
+                <p className="hint">
+                  {!leases.length && "Load a sample or your own PDF to begin — then ask me anything about it."}
+                  {leases.length > 0 && !leaseId && "Pick one of your leases in the sidebar — then ask me anything about it."}
+                  {leaseId && "Answers quote the exact lease sentence. Deadlines, letters, preferences — just ask."}
+                </p>
               </div>
-            )}
+              <div className="ph-badges">
+                {leaseId && <span className="leasetag">{leaseId}</span>}
+                {leaseId && state && <span className={`badge ${STATUS_LABEL[state.lease.status]?.cls ?? ""}`}>{STATUS_LABEL[state.lease.status]?.label}</span>}
+                {busy && <span className="badge warn">{busy}…</span>}
+              </div>
+            </header>
             <div className="log" ref={logRef}>
-              {chat.map((m, i) =>
+              {chat.length > 1 && chat.map((m, i) =>
                 m.who === "system" ? (
                   <div key={i} className="msg system">{m.text}</div>
                 ) : (
@@ -424,17 +433,29 @@ export default function App() {
             </div>
             {chat.length <= 1 && !thinking && (
               <div className="empty">
-                <Sparkles size={26} />
-                <p>Ask about deadlines, request a letter, or tell me how you like things done —<br />I&apos;ll answer with the lease sentence in hand.</p>
-                <div className="startergrid">
-                  {STARTERS.map(s => (
-                    <button key={s.text} className="startercard" onClick={() => send(s.text)} disabled={!leaseId}>
-                      <s.icon size={16} />
-                      <span>{s.text}</span>
-                    </button>
-                  ))}
-                </div>
-                {!leaseId && <p className="hint">load a lease first — use 📎 below, or “Add lease” in the sidebar</p>}
+                <div className="avatar bot big"><MiniBell /></div>
+                <h3 className="heroline">Hi! I read your leases and answer questions about them.</h3>
+                <p>Every answer shows the exact sentence it came from.</p>
+                {leases.length === 0 ? (
+                  <div className="herosteps">
+                    <button className="btn primary" onClick={loadSample} disabled={!!busy}>Load a sample lease</button>
+                    <label className="btn ghost">
+                      <Upload size={15} /> Upload your PDF
+                      <input type="file" accept="application/pdf" style={{ display: "none" }} aria-label="Upload a lease PDF"
+                        onChange={e => e.target.files?.[0] && upload(e.target.files[0])} />
+                    </label>
+                  </div>
+                ) : !leaseId ? (
+                  <div className="herosteps">
+                    <p className="hint" style={{ width: "100%" }}>pick a lease to start:</p>
+                    {leases.slice(0, 6).map(l => (
+                      <button key={l.id} className="startercard" onClick={() => setLeaseId(l.id)}>
+                        <CircleDot size={14} className={`dot ${STATUS_DOT[l.status] ?? ""}`} />
+                        <span>{l.id}</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             )}
             <div className="askbar">

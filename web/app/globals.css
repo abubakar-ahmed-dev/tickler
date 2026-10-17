@@ -350,3 +350,9 @@ input[type=radio] { accent-color: var(--accent); }
 .scroller .empty { padding: 56px 20px; }
 .fsource .pg { margin-left: auto; flex: none; font-style: normal; font-size: 10.5px; color: var(--dim); border: 1px solid var(--line); border-radius: 99px; padding: 1px 8px; }
 .workingline { padding: 10px 24px 0; }
+
+/* chat empty state v2 */
+.avatar.bot.big { width: 52px; height: 52px; background: var(--panel); border: 1px solid var(--line2); }
+.heroline { margin: 0; font-size: 19px; font-weight: 700; color: var(--text); letter-spacing: -.01em; }
+.herosteps { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; width: min(480px, 100%); }
+.herosteps .startercard { background: var(--panel); }
