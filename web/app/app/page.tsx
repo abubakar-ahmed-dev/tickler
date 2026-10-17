@@ -70,6 +70,7 @@ export default function App() {
   const [tab, setTab] = useState<Tab>("chat");
   const [collapsed, setCollapsed] = useState(false);
   const [leases, setLeases] = useState<Lease[]>([]);
+  const [leasesLoaded, setLeasesLoaded] = useState(false);
   const [leaseId, setLeaseId] = useState("");
   const [chat, setChat] = useState<ChatMsg[]>([
     { who: "bot", text: "Hi! I read your leases and answer questions about them — and every answer shows the exact sentence it came from. Load a sample lease to try it." },
@@ -116,7 +117,9 @@ export default function App() {
   const say = useCallback((text: string) => setChat(c => [...c, { who: "system", text }]), []);
 
   const refreshLeases = useCallback(async () => {
-    setLeases(await (await fetch("/api/leases")).json());
+    const r = await fetch("/api/leases");
+    setLeases(await r.json());
+    setLeasesLoaded(true);
   }, []);
 
   const refreshState = useCallback(async (id: string) => {
@@ -313,8 +316,13 @@ export default function App() {
           )}
           {!collapsed && leasesOpen && (
             <>
-              {leases.length === 0 && <p className="leasesempty">nothing here yet</p>}
-              <div className="leaselist">
+              {!leasesLoaded ? (
+                <div className="leaselist" aria-hidden>
+                  {[0, 1, 2].map(i => <div key={i} className="skeleton row" />)}
+                </div>
+              ) : leases.length === 0 && <p className="leasesempty">nothing here yet</p>}
+              {leasesLoaded && leases.length > 0 && (
+                <div className="leaselist">
                 {leases.map(l => (
                   <button key={l.id} className={`leaserow ${leaseId === l.id ? "active" : ""}`}
                     onClick={() => setLeaseId(l.id)}
@@ -326,7 +334,8 @@ export default function App() {
                     </span>
                   </button>
                 ))}
-              </div>
+                </div>
+              )}
               <div className="addwrap">
                 <button className="railitem addlease" onClick={() => setMenuWhere(w => (w === "side" ? "none" : "side"))}>
                   <Plus size={15} /> <span>Add lease</span>
@@ -382,7 +391,13 @@ export default function App() {
               </div>
             </header>
             <div className="log" ref={logRef}>
-              {chat.length > 1 && chat.map((m, i) =>
+              {!leasesLoaded ? (
+                <div className="empty" aria-hidden>
+                  <div className="skeleton circle" />
+                  <div className="skeleton line" style={{ width: "60%" }} />
+                  <div className="skeleton line" style={{ width: "42%" }} />
+                </div>
+              ) : chat.length > 1 && chat.map((m, i) =>
                 m.who === "system" ? (
                   <div key={i} className="msg system">{m.text}</div>
                 ) : (
@@ -449,7 +464,7 @@ export default function App() {
               {thinking && <div className="msgrow bot"><div className="avatar bot" />
                 <div className="msgcol"><div className="bubble bot tools">thinking…</div></div></div>}
             </div>
-            {chat.length <= 1 && !thinking && (
+            {leasesLoaded && chat.length <= 1 && !thinking && (
               <div className="empty">
                 <div className="avatar bot big"><MiniBell /></div>
                 <h3 className="heroline">Hi! I read your leases and answer questions about them.</h3>

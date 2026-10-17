@@ -360,3 +360,10 @@ input[type=radio] { accent-color: var(--accent); }
 
 .msgrow { animation: rise .28s ease; }
 @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* loading skeletons */
+.skeleton { background: linear-gradient(90deg, var(--chip) 25%, var(--panel2) 45%, var(--chip) 65%); background-size: 200% 100%; animation: shimmer 1.3s infinite linear; border-radius: 7px; }
+.skeleton.row { height: 30px; margin-bottom: 6px; }
+.skeleton.circle { width: 74px; height: 74px; border-radius: 99px; }
+.skeleton.line { height: 16px; margin: 10px auto 0; }
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
