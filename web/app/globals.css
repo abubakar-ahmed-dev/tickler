@@ -241,9 +241,10 @@ input[type=radio] { accent-color: var(--accent); }
 .leasename { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .leasename em { font-style: normal; margin-left: 6px; background: var(--warn); color: #241c07; font-size: 10px; font-weight: 700; border-radius: 99px; padding: 0 5px; }
 .addwrap { position: relative; }
+.attachwrap { position: relative; }
 .addlease { color: var(--accent); }
 .attachmenu { position: absolute; bottom: calc(100% + 6px); left: 0; z-index: 40; min-width: 210px; background: var(--panel2); border: 1px solid var(--line2); border-radius: 10px; padding: 5px; box-shadow: 0 12px 30px rgba(0,0,0,.45); }
-.attachwrap .attachmenu { bottom: auto; top: calc(100% + 8px); left: 0; }
+.attachwrap .attachmenu { bottom: calc(100% + 10px); top: auto; left: 0; }
 .attachmenu button { display: flex; align-items: center; gap: 9px; width: 100%; text-align: left; background: transparent; border: 0; color: var(--text); border-radius: 7px; padding: 9px 11px; font-size: 13px; }
 .attachmenu button:hover { background: var(--chip); }
 .attachmenu button svg { color: var(--accent); }
@@ -251,3 +252,32 @@ input[type=radio] { accent-color: var(--accent); }
 .leasecontext b { color: var(--text); }
 .headright { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 .leasetag { font-size: 11px; color: var(--dim); border: 1px solid var(--line); border-radius: 99px; padding: 2px 9px; }
+
+/* leases section */
+.leases { display: flex; flex-direction: column; gap: 2px; min-height: 0; overflow: hidden; }
+.leaseshead { display: flex; align-items: center; gap: 6px; margin: 0 0 4px; padding: 4px 12px; background: transparent; border: 0; color: var(--dim); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; font-weight: 600; cursor: pointer; border-radius: 6px; }
+.leaseshead:hover { color: var(--text); background: var(--chip); }
+.leaseshead em { font-style: normal; background: var(--warn); color: #241c07; font-size: 9.5px; font-weight: 700; border-radius: 99px; padding: 0 5px; }
+.leaseshead .chev { margin-left: auto; transition: transform .15s ease; }
+.leaseshead .chev.closed { transform: rotate(-90deg); }
+.leaselist { display: flex; flex-direction: column; gap: 2px; overflow-y: auto; max-height: 210px; padding-right: 2px; scrollbar-width: thin; scrollbar-color: transparent transparent; }
+.leaselist::-webkit-scrollbar { width: 8px; }
+.leaselist::-webkit-scrollbar-thumb { background: transparent; border: none; }
+.leaselist:hover { scrollbar-color: var(--line2) transparent; }
+.leaselist:hover::-webkit-scrollbar-thumb { background: var(--line2); border: 2px solid #12181e; }
+.leaserow { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: transparent; border: 0; color: var(--text); border-radius: 7px; padding: 7px 12px; font-size: 12.5px; flex: none; }
+.addwrap { margin-top: 2px; }
+
+/* horizontal setup stepper */
+.railfoot { margin-top: auto; }
+.stepper { display: flex; align-items: flex-start; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 8px 9px; }
+.step { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; position: relative; }
+.step::before { content: ""; position: absolute; top: 9px; left: -50%; width: 100%; height: 2px; background: var(--line); }
+.step:first-child::before { display: none; }
+.step.done::before { background: var(--accent); }
+.stepdot { width: 19px; height: 19px; border-radius: 99px; background: var(--chip); border: 1.5px solid var(--line2); color: var(--dim); font-size: 9.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; }
+.step.done .stepdot { background: var(--accent); border-color: var(--accent); color: #08110c; }
+.step.next .stepdot { border-color: var(--accent); color: var(--accent); }
+.steplabel { font-size: 9.5px; color: var(--dim); text-align: center; line-height: 1.2; }
+.step.next .steplabel { color: var(--text); font-weight: 600; }
+.stephint { margin: 7px 2px 0; color: var(--dim); font-size: 11.5px; text-align: center; }
