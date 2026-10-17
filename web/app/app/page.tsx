@@ -165,22 +165,30 @@ export default function Home() {
 
   return (
     <>
-      <header>
-        <Link href="/" className="brand" style={{ textDecoration: "none" }}>
-          <svg viewBox="0 0 64 64" width="24" height="24" aria-hidden>
-            <rect width="64" height="64" rx="14" fill="#1f2830" />
-            <path d="M32 12c-8.3 0-14 6.2-14 14v9l-4 7h36l-4-7v-9c0-7.8-5.7-14-14-14z" fill="none" stroke="#4cc38a" strokeWidth="4" strokeLinejoin="round" />
-            <path d="M26 46a6 6 0 0 0 12 0" fill="none" stroke="#4cc38a" strokeWidth="4" strokeLinecap="round" />
-            <path d="M24 28l6 6 11-11" fill="none" stroke="#e6edf3" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          Tickler
-        </Link>
-        <span className="tag">the workspace — ask anything, approve what matters</span>
-        <a href="https://github.com/abubakar-ahmed-dev/tickler" target="_blank" rel="noreferrer" className="tag" style={{ marginLeft: "auto", color: "var(--dim)" }}>GitHub ↗</a>
+      <header className="appbar">
+        <div className="shell">
+          <Link href="/" className="brand" style={{ textDecoration: "none" }}>
+            <svg viewBox="0 0 64 64" width="24" height="24" aria-hidden>
+              <rect width="64" height="64" rx="14" fill="#1f2830" />
+              <path d="M32 12c-8.3 0-14 6.2-14 14v9l-4 7h36l-4-7v-9c0-7.8-5.7-14-14-14z" fill="none" stroke="#4cc38a" strokeWidth="4" strokeLinejoin="round" />
+              <path d="M26 46a6 6 0 0 0 12 0" fill="none" stroke="#4cc38a" strokeWidth="4" strokeLinecap="round" />
+              <path d="M24 28l6 6 11-11" fill="none" stroke="#e6edf3" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Tickler
+          </Link>
+          <span className="divider" />
+          <span className="tag">the workspace — ask anything, approve what matters</span>
+          <div className="techbadges">
+            <span className="badge">graph: FalkorDB</span>
+            <span className="badge">timers: Temporal</span>
+            <span className="badge">models: open weights</span>
+            <a href="https://github.com/abubakar-ahmed-dev/tickler" target="_blank" rel="noreferrer" className="tag" style={{ color: "var(--dim)" }}>GitHub ↗</a>
+          </div>
+        </div>
       </header>
-      <main>
+      <main className="shell">
         <section className="panel" id="chat">
-          <h2>Concierge — ask, and get the source sentence back</h2>
+          <h2>Concierge<span className="sub">every answer cites the lease sentence it came from · tool calls show as chips</span></h2>
           <div id="log" ref={logRef}>
             {chat.map((m, i) => (
               <div key={i} className={`msg ${m.who}`}>
@@ -216,7 +224,7 @@ export default function Home() {
 
         <div className="col">
           <section className="panel">
-            <h2>Getting started</h2>
+            <h2>Getting started<span className="sub">{`step ${Math.min(nextStep + 1, 4)} of 4`}</span></h2>
             <div className="list">
               {steps.map((s, i) => (
                 <div className={`item step ${s.done ? "done" : ""} ${i === nextStep ? "next" : ""}`} key={s.label}>
@@ -240,6 +248,7 @@ export default function Home() {
 
           <section className="panel">
             <h2>Portfolio</h2>
+            <div className="subhint" style={{ padding: "8px 14px 0" }}>select a lease to see its terms, deadlines and live alerts</div>
             <div className="pad row">
               <select value={leaseId} onChange={e => setLeaseId(e.target.value)} aria-label="Select a lease">
                 <option value="">{leases.length ? "— select a lease —" : "no leases yet"}</option>
