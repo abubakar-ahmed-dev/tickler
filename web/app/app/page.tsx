@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
   MessageSquare, ListChecks, CalendarClock, Bell, Upload, Sparkles,
   ArrowRight, Check, Quote, Zap, ShieldCheck, FileText, Paperclip,
-  PanelLeftClose, PanelLeftOpen,
+  PanelLeftClose, PanelLeftOpen, Plus, CircleDot,
 } from "lucide-react";
 
 type Lease = { id: string; title: string; status: string; deadlines: number; needsReview: number };
@@ -25,6 +25,8 @@ const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
   armed: { label: "reminders on", cls: "ok" },
   rejected: { label: "rejected", cls: "bad" },
 };
+
+const STATUS_DOT: Record<string, string> = { armed: "ok", awaiting_review: "warn", rejected: "bad" };
 
 const STARTERS = [
   { icon: CalendarClock, text: "What deadlines are coming up?" },
@@ -46,6 +48,8 @@ export default function App() {
   const [edits, setEdits] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState("");
   const [armMode, setArmMode] = useState<"demo" | "real">("demo");
+  const [menuWhere, setMenuWhere] = useState<"none" | "ask" | "side">("none");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const logRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -58,6 +62,17 @@ export default function App() {
       return !c;
     });
   };
+
+  // close the attach menu on outside click (two anchors: askbar 📎 + sidebar "Add lease")
+  useEffect(() => {
+    if (menuWhere === "none") return;
+    const close = (e: MouseEvent) => {
+      const t = e.target as HTMLElement;
+      if (!t.closest(".attachwrap") && !t.closest(".addwrap")) setMenuWhere("none");
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [menuWhere]);
 
   const say = useCallback((text: string) => setChat(c => [...c, { who: "system", text }]), []);
 
@@ -94,6 +109,12 @@ export default function App() {
   ];
   const doneCount = steps.filter(s => s.done).length;
 
+  const pickLease = (id: string) => {
+    setLeaseId(id);
+    if (tab === "chat") return;
+    // stay on the user's tab; the stage follows the selected lease
+  };
+
   const send = async (raw?: string) => {
     const q = (raw ?? input).trim();
     if (!q || thinking) return;
@@ -116,6 +137,7 @@ export default function App() {
 
   const loadSample = async () => {
     setBusy("reading the sample lease");
+    setMenuWhere("none");
     try {
       const r = await fetch("/api/sample", { method: "POST" });
       const j = await r.json();
@@ -131,6 +153,7 @@ export default function App() {
 
   const upload = async (file: File) => {
     setBusy("reading your PDF");
+    setMenuWhere("none");
     const form = new FormData();
     form.set("file", file);
     let j: { leaseId?: string; error?: string };
@@ -179,6 +202,20 @@ export default function App() {
     { id: "alerts", label: "Alerts", icon: Bell, badge: pendingDrafts.length || undefined },
   ];
 
+  const attachMenu = (anchor: "ask" | "side") => (
+    <div className="attachmenu">
+      <button onClick={() => fileInputRef.current?.click()}>
+        <Upload size={15} /> Upload a lease PDF
+      </button>
+      <button onClick={loadSample}>
+        <Sparkles size={15} /> Try a sample lease
+      </button>
+      <input ref={anchor === "ask" ? fileInputRef : undefined} type="file" accept="application/pdf"
+        style={{ display: "none" }} aria-label="Upload a lease PDF"
+        onChange={e => e.target.files?.[0] && upload(e.target.files[0])} />
+    </div>
+  );
+
   return (
     <div className={`app ${collapsed ? "railcollapsed" : ""}`}>
       <aside className="rail">
@@ -199,14 +236,39 @@ export default function App() {
 
         <nav className="railnav">
           {tabs.map(t => (
-            <button key={t.id} className={`railitem ${tab === t.id ? "active" : ""}`} onClick={() => setTab(t.id)}
-              title={t.label}>
+            <button key={t.id} className={`railitem ${tab === t.id ? "active" : ""}`} onClick={() => setTab(t.id)} title={t.label}>
               <t.icon size={17} strokeWidth={1.8} />
               {!collapsed && <span>{t.label}</span>}
               {t.badge ? <em>{collapsed ? "•" : t.badge}</em> : null}
             </button>
           ))}
         </nav>
+
+        <div className="leases">
+          {!collapsed && <p className="leaseshead">Your leases</p>}
+          {leases.length === 0 && !collapsed && <p className="leasesempty">nothing here yet</p>}
+          {leases.map(l => (
+            <button key={l.id} className={`leaserow ${leaseId === l.id ? "active" : ""}`}
+              onClick={() => pickLease(l.id)}
+              title={`${l.id} — ${STATUS_LABEL[l.status]?.label ?? l.status}`}>
+              <CircleDot size={12} className={`dot ${STATUS_DOT[l.status] ?? ""}`} />
+              {!collapsed && (
+                <span className="leasename">
+                  {l.id}
+                  {l.needsReview ? <em>{l.needsReview}</em> : null}
+                </span>
+              )}
+            </button>
+          ))}
+          {!collapsed && (
+            <div className="addwrap">
+              <button className="railitem addlease" onClick={() => setMenuWhere(w => (w === "side" ? "none" : "side"))}>
+                <Plus size={15} /> <span>Add lease</span>
+              </button>
+              {menuWhere === "side" && attachMenu("side")}
+            </div>
+          )}
+        </div>
 
         {!collapsed && (
           <div className="railfoot">
@@ -225,42 +287,14 @@ export default function App() {
       </aside>
 
       <div className="work">
-        <div className="contextbar">
-          <span className="viewing">Viewing:</span>
-          <select value={leaseId} onChange={e => setLeaseId(e.target.value)} aria-label="Switch between loaded leases">
-            <option value="">{leases.length ? "Pick a lease to view" : "No leases yet — load a sample or upload a PDF"}</option>
-            {leases.filter(l => l.title.startsWith("Sample")).length > 0 && (
-              <optgroup label="Sample leases">
-                {leases.filter(l => l.title.startsWith("Sample")).map(l => (
-                  <option key={l.id} value={l.id}>
-                    {l.id} · {STATUS_LABEL[l.status]?.label ?? l.status}{l.needsReview ? ` (${l.needsReview})` : ""}
-                  </option>
-                ))}
-              </optgroup>
-            )}
-            {leases.filter(l => !l.title.startsWith("Sample")).length > 0 && (
-              <optgroup label="Your uploads">
-                {leases.filter(l => !l.title.startsWith("Sample")).map(l => (
-                  <option key={l.id} value={l.id}>
-                    {l.id} · {STATUS_LABEL[l.status]?.label ?? l.status}{l.needsReview ? ` (${l.needsReview})` : ""}
-                  </option>
-                ))}
-              </optgroup>
-            )}
-          </select>
-          {current && <span className={`badge ${STATUS_LABEL[current.status]?.cls ?? ""}`}>{STATUS_LABEL[current.status]?.label ?? current.status}</span>}
-          <span className="spacer" />
-          {busy && <span className="badge warn">{busy}…</span>}
-        </div>
-
-        {unapproved.length > 0 && leaseId && tab !== "review" && (
-          <button className="nudge" onClick={() => setTab("review")}>
-            <Zap size={14} /> {unapproved.length} details need your review — reminders stay off until you approve. <b>Open Check details <ArrowRight size={12} /></b>
-          </button>
-        )}
-
         {tab === "chat" && (
           <section className="stage chatstage">
+            {leaseId && state && (
+              <div className="leasecontext">
+                talking about <b>{leaseId}</b>
+                <span className={`badge ${STATUS_LABEL[state.lease.status]?.cls ?? ""}`}>{STATUS_LABEL[state.lease.status]?.label}</span>
+              </div>
+            )}
             <div className="log" ref={logRef}>
               {chat.map((m, i) => (
                 <div key={i} className={`msg ${m.who}`}>
@@ -287,47 +321,68 @@ export default function App() {
                     </button>
                   ))}
                 </div>
-                {!leaseId && <p className="hint">load a lease first — the sample works great</p>}
+                {!leaseId && <p className="hint">load a lease first — use 📎 below, or “Add lease” in the sidebar</p>}
               </div>
             )}
             <div className="askbar">
-              <label className="btn icon" title="Upload a lease PDF">
-                <Upload size={16} />
-                <input type="file" accept="application/pdf" style={{ display: "none" }} aria-label="Upload a lease PDF"
-                  onChange={e => e.target.files?.[0] && upload(e.target.files[0])} />
-              </label>
-              <button className="btn icon" onClick={loadSample} disabled={!!busy} title="Load a sample lease">
-                <Sparkles size={16} />
-              </button>
+              <div className="attachwrap">
+                <button className={`btn icon ${menuWhere === "ask" ? "open" : ""}`} onClick={() => setMenuWhere(w => (w === "ask" ? "none" : "ask"))}
+                  title="Add a lease: upload your own or try a sample" aria-label="Add a lease">
+                  <Paperclip size={16} />
+                </button>
+                {menuWhere === "ask" && attachMenu("ask")}
+              </div>
               <input
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && send()}
-                placeholder="Ask about your leases…"
+                placeholder={busy ? `working — ${busy}…` : leaseId ? `Ask about ${leaseId}…` : "Ask about your leases…"}
                 aria-label="Ask about your leases"
+                readOnly={!!busy}
               />
-              <button className="btn primary" onClick={() => send()} disabled={thinking || !input.trim()}>Send</button>
+              <button className="btn primary" onClick={() => send()} disabled={thinking || !input.trim() || !!busy}>Send</button>
             </div>
           </section>
         )}
 
-        {tab === "review" && (
-          <section className="stage">
+        {tab !== "chat" && (
+          <>
             <div className="stagehead">
               <div>
-                <h2>Check the details</h2>
-                <p className="hint">Each detail shows the sentence it came from. Fix anything wrong — your fixes are remembered. Reminders only start after you approve.</p>
+                <h2>{tab === "review" ? "Check the details" : tab === "deadlines" ? "Deadlines" : "Alerts & letters"}</h2>
+                <p className="hint">
+                  {tab === "review" && "Each detail shows the sentence it came from. Fix anything wrong — your fixes are remembered. Reminders only start after you approve."}
+                  {tab === "deadlines" && "These come straight from the details you approved. Reminders fire on their own — nothing for you to do once they're on."}
+                  {tab === "alerts" && "When a reminder fires, the helper decides: wait, give a heads-up, or draft a letter. Letters always wait for your approval."}
+                </p>
               </div>
-              {unapproved.length > 0 && <span className="badge warn">{unapproved.length} waiting on you</span>}
-              {unapproved.length === 0 && <span className="badge ok">approved</span>}
+              <div className="headright">
+                {leaseId && <span className="leasetag">{leaseId}</span>}
+                {state && <span className={`badge ${STATUS_LABEL[state.lease.status]?.cls ?? ""}`}>{STATUS_LABEL[state.lease.status]?.label}</span>}
+                {busy && <span className="badge warn">{busy}…</span>}
+                {tab === "review" && unapproved.length > 0 && <span className="badge warn">{unapproved.length} waiting on you</span>}
+                {tab === "review" && unapproved.length === 0 && state && <span className="badge ok">approved</span>}
+                {tab === "deadlines" && scheduledCount > 0 && <span className="badge ok">{scheduledCount} reminders running</span>}
+                {tab === "alerts" && pendingDrafts.length > 0 && <span className="badge warn">{pendingDrafts.length} letter{pendingDrafts.length > 1 ? "s" : ""} waiting</span>}
+              </div>
             </div>
+            {!leaseId && (
+              <div className="empty">
+                {tab === "review" ? <ListChecks size={26} /> : tab === "deadlines" ? <CalendarClock size={26} /> : <Bell size={26} />}
+                <p>no lease selected — use <b>📎 Add lease</b> in the sidebar</p>
+              </div>
+            )}
+          </>
+        )}
+
+        {tab === "review" && leaseId && (
+          <section className="stage">
             <div className="scroller">
-              {!state && <div className="empty"><ListChecks size={26} /><p>select a lease to check its details</p></div>}
-              {state && unapproved.length === 0 && (
+              {unapproved.length === 0 && (
                 <div className="empty">
                   <ShieldCheck size={26} />
-                  <p>everything approved{state.lease?.status === "armed" ? " — reminders are running." : " — turn reminders on to finish setup."}</p>
-                  {state.lease?.status !== "armed" && (
+                  <p>everything approved{state?.lease?.status === "armed" ? " — reminders are running." : " — turn reminders on to finish setup."}</p>
+                  {state?.lease?.status !== "armed" && (
                     <button className="btn primary" onClick={submitReview} disabled={!!busy}>Turn on reminders</button>
                   )}
                 </div>
@@ -369,17 +424,9 @@ export default function App() {
           </section>
         )}
 
-        {tab === "deadlines" && (
+        {tab === "deadlines" && leaseId && (
           <section className="stage">
-            <div className="stagehead">
-              <div>
-                <h2>Deadlines</h2>
-                <p className="hint">These come straight from the details you approved. Reminders fire on their own — nothing for you to do once they&apos;re on.</p>
-              </div>
-              {scheduledCount > 0 && <span className="badge ok">{scheduledCount} reminders running</span>}
-            </div>
             <div className="scroller">
-              {!state && <div className="empty"><CalendarClock size={26} /><p>select a lease to see its deadlines</p></div>}
               {state?.deadlines.length === 0 && <div className="empty"><CalendarClock size={26} /><p>no deadlines yet — check the details first</p></div>}
               {state?.deadlines.map(d => (
                 <div className="deadlinecard" key={d.type + d.date}>
@@ -403,17 +450,9 @@ export default function App() {
           </section>
         )}
 
-        {tab === "alerts" && (
+        {tab === "alerts" && leaseId && (
           <section className="stage">
-            <div className="stagehead">
-              <div>
-                <h2>Alerts &amp; letters</h2>
-                <p className="hint">When a reminder fires, the helper decides: wait, give a heads-up, or draft a letter. Letters always wait for your approval.</p>
-              </div>
-              {pendingDrafts.length > 0 && <span className="badge warn">{pendingDrafts.length} letter{pendingDrafts.length > 1 ? "s" : ""} waiting</span>}
-            </div>
             <div className="scroller">
-              {!state && <div className="empty"><Bell size={26} /><p>select a lease to see its alerts</p></div>}
               {state && state.alerts.length === 0 && (
                 <div className="empty">
                   <Bell size={26} />
