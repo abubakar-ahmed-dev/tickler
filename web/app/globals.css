@@ -226,3 +226,28 @@ input[type=radio] { accent-color: var(--accent); }
 .askbar { padding: 12px 0 0; }
 
 .viewing { color: var(--dim); font-size: 12.5px; white-space: nowrap; }
+
+/* sidebar leases */
+.leases { display: flex; flex-direction: column; gap: 2px; min-height: 0; overflow: auto; }
+.leaseshead { margin: 0 0 4px; padding: 0 12px; color: var(--dim); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; font-weight: 600; }
+.leasesempty { margin: 0; padding: 0 12px; color: var(--dim); font-size: 12px; }
+.leaserow { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: transparent; border: 0; color: var(--text); border-radius: 7px; padding: 7px 12px; font-size: 12.5px; }
+.leaserow:hover { background: var(--chip); }
+.leaserow.active { background: var(--chip); box-shadow: inset 2px 0 0 var(--accent); }
+.leaserow .dot { color: var(--dim); flex: none; }
+.leaserow .dot.ok { color: var(--accent); }
+.leaserow .dot.warn { color: var(--warn); }
+.leaserow .dot.bad { color: var(--bad); }
+.leasename { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.leasename em { font-style: normal; margin-left: 6px; background: var(--warn); color: #241c07; font-size: 10px; font-weight: 700; border-radius: 99px; padding: 0 5px; }
+.addwrap { position: relative; }
+.addlease { color: var(--accent); }
+.attachmenu { position: absolute; bottom: calc(100% + 6px); left: 0; z-index: 40; min-width: 210px; background: var(--panel2); border: 1px solid var(--line2); border-radius: 10px; padding: 5px; box-shadow: 0 12px 30px rgba(0,0,0,.45); }
+.attachwrap .attachmenu { bottom: auto; top: calc(100% + 8px); left: 0; }
+.attachmenu button { display: flex; align-items: center; gap: 9px; width: 100%; text-align: left; background: transparent; border: 0; color: var(--text); border-radius: 7px; padding: 9px 11px; font-size: 13px; }
+.attachmenu button:hover { background: var(--chip); }
+.attachmenu button svg { color: var(--accent); }
+.leasecontext { display: flex; align-items: center; gap: 8px; color: var(--dim); font-size: 12.5px; padding: 2px 2px 0; }
+.leasecontext b { color: var(--text); }
+.headright { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.leasetag { font-size: 11px; color: var(--dim); border: 1px solid var(--line); border-radius: 99px; padding: 2px 9px; }
