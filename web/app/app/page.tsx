@@ -147,7 +147,10 @@ export default function App() {
     }
     if (seededRef.current === leaseId) return;
     seededRef.current = leaseId;
-    setChat(c => [...c, { who: "bot", text: `We're now talking about ${leaseId}. Ask me anything about it — deadlines, the renewal notice, deposit terms — and I'll answer with the exact lease sentence.` }]);
+    // fresh seed replaces the greeting; a real conversation keeps its history
+    setChat(c => (c.length <= 1
+      ? [{ who: "bot", text: `We're now talking about ${leaseId}. Ask me anything about it — deadlines, the renewal notice, deposit terms — and I'll answer with the exact lease sentence.` }]
+      : [...c, { who: "bot", text: `Now talking about ${leaseId}.` }]));
   }, [leaseId]);
 
   const current = leases.find(l => l.id === leaseId);
