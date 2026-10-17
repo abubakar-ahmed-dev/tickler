@@ -72,7 +72,7 @@ export default function Landing() {
       <section className="hero">
         <p className="eyebrow">Open-source AI for small landlords</p>
         <h1>
-          Never miss a<br />lease deadline <span className="glow">again.</span>
+          Never Miss A<br />Lease Deadline <span className="glow">Again.</span>
         </h1>
         <p className="sub">
           Tickler reads your lease, remembers the dates hiding inside it, and shows you the exact
@@ -102,7 +102,7 @@ export default function Landing() {
 
       <section className="section" id="how">
         <p className="kicker">How it works</p>
-        <h2>Three steps. Then it never sleeps.</h2>
+        <h2>Three Steps. Then It Never Sleeps.</h2>
         <div className="cards3">
           {steps.map((s, i) => (
             <div className="card" key={s.title}>
@@ -117,7 +117,7 @@ export default function Landing() {
 
       <section className="section alt" id="why">
         <p className="kicker">Why Tickler</p>
-        <h2>Built like the paperwork matters. Because it does.</h2>
+        <h2>Built Like The Paperwork Matters. Because It Does.</h2>
         <div className="cards3">
           {features.map(f => (
             <div className="card flat" key={f.title}>
@@ -133,7 +133,7 @@ export default function Landing() {
       </section>
 
       <section className="closing">
-        <h2>The deadline machine that can&apos;t forget.</h2>
+        <h2>The Deadline Machine That Can&apos;t Forget.</h2>
         <Link href="/app" className="cta big">Open the app <ArrowRight size={18} /></Link>
       </section>
 
