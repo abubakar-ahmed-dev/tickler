@@ -352,7 +352,8 @@ input[type=radio] { accent-color: var(--accent); }
 .workingline { padding: 10px 24px 0; }
 
 /* chat empty state v2 */
-.avatar.bot.big { width: 52px; height: 52px; background: var(--panel); border: 1px solid var(--line2); }
+.avatar.bot.big { width: 74px; height: 74px; background: var(--panel); border: 1px solid var(--line2); box-shadow: 0 10px 30px rgba(76,195,138,.10); }
+.avatar.bot.big svg { width: 30px; height: 30px; }
 .heroline { margin: 0; font-size: 19px; font-weight: 700; color: var(--text); letter-spacing: -.01em; }
 .herosteps { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; width: min(480px, 100%); }
 .herosteps .startercard { background: var(--panel); }

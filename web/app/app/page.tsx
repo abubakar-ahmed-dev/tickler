@@ -455,7 +455,16 @@ export default function App() {
                       </button>
                     ))}
                   </div>
-                ) : null}
+                ) : (
+                  <div className="startergrid">
+                    {STARTERS.map(s => (
+                      <button key={s.text} className="startercard" onClick={() => send(s.text)}>
+                        <s.icon size={16} />
+                        <span>{s.text}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
             <div className="askbar">
