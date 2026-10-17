@@ -81,6 +81,8 @@ export default function App() {
   const [edits, setEdits] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState("");
   const [armMode, setArmMode] = useState<"demo" | "real">("demo");
+  const [emailDraft, setEmailDraft] = useState("");
+  const [emailSaved, setEmailSaved] = useState("");
   const [menuWhere, setMenuWhere] = useState<"none" | "ask" | "side">("none");
   const [leasesOpen, setLeasesOpen] = useState(true);
   const [openCites, setOpenCites] = useState<Record<number, number | undefined>>({});
@@ -130,6 +132,18 @@ export default function App() {
   }, []);
 
   useEffect(() => { refreshLeases(); }, [refreshLeases]);
+  useEffect(() => {
+    fetch("/api/settings").then(r => r.json()).then(j => j.email && setEmailDraft(j.email)).catch(() => {});
+  }, []);
+  const saveEmail = async () => {
+    const r = await fetch("/api/settings", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ email: emailDraft.trim() }),
+    });
+    const j = await r.json();
+    setEmailSaved(j.error ? `couldn't save: ${j.error}` : "saved ✓ — alerts will be emailed here");
+    setTimeout(() => setEmailSaved(""), 4000);
+  };
   useEffect(() => { refreshState(leaseId); }, [leaseId, refreshState]);
   useEffect(() => {
     if (!leaseId) return;
@@ -640,6 +654,13 @@ export default function App() {
                 {pendingDrafts.length > 0 && <span className="badge warn">{pendingDrafts.length} letter{pendingDrafts.length > 1 ? "s" : ""} waiting</span>}
               </div>
             </header>
+            <div className="emailrow">
+              <span className="hint">Email the alerts to:</span>
+              <input className="fieldinput" type="email" placeholder="you@example.com" value={emailDraft}
+                onChange={e => setEmailDraft(e.target.value)} aria-label="Reminder email address" />
+              <button className="btn ghost" onClick={saveEmail} disabled={!!busy}>Save</button>
+              {emailSaved && <span className="badge ok">{emailSaved}</span>}
+            </div>
             {!leaseId ? (
               <div className="empty"><Bell size={26} /><p>no lease selected — use <b>📎 Add lease</b> in the sidebar</p></div>
             ) : (
