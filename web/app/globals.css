@@ -137,7 +137,7 @@ input[type=radio] { accent-color: var(--accent); }
 
 /* chat */
 .chatstage { padding-bottom: 0; }
-.log { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 14px; width: 100%; padding: 4px 2px 14px; }
+.log { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 14px; width: 100%; padding: 10px 2px 64px; }
 .msg { max-width: 88%; white-space: pre-wrap; line-height: 1.6; }
 .msg.you { align-self: flex-end; background: var(--chip); padding: 10px 14px; border-radius: 12px 12px 3px 12px; }
 .msg.bot { align-self: flex-start; }
