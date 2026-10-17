@@ -297,6 +297,9 @@ export default function App() {
 
         {!collapsed && (
           <div className="railfoot">
+            <p className="stepperscope" title={leaseId ? `Progress for ${leaseId}` : "Load a lease to track its progress"}>
+              {leaseId ? `Progress · ${leaseId}` : "Progress"}
+            </p>
             <div className="stepper">
               {steps.map((s, i) => (
                 <div className={`step ${s.done ? "done" : ""} ${i === steps.findIndex(x => !x.done) ? "next" : ""}`} key={s.label}
@@ -307,12 +310,6 @@ export default function App() {
                 </div>
               ))}
             </div>
-            <p className="stephint">
-              {(() => {
-                const next = steps.findIndex(s => !s.done);
-                return next === -1 ? "all set ✓" : steps[next].label;
-              })()}
-            </p>
           </div>
         )}
       </aside>

@@ -281,3 +281,5 @@ input[type=radio] { accent-color: var(--accent); }
 .steplabel { font-size: 9.5px; color: var(--dim); text-align: center; line-height: 1.2; }
 .step.next .steplabel { color: var(--text); font-weight: 600; }
 .stephint { margin: 7px 2px 0; color: var(--dim); font-size: 11.5px; text-align: center; }
+
+.stepperscope { margin: 0 2px 6px; color: var(--dim); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
