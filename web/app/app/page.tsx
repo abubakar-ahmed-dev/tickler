@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
   MessageSquare, ListChecks, CalendarClock, Bell, Upload, Sparkles,
   ArrowRight, Check, Quote, Zap, ShieldCheck, FileText, Paperclip,
-  PanelLeftClose, PanelLeftOpen, Plus, CircleDot,
+  PanelLeftClose, PanelLeftOpen, Plus, CircleDot, ChevronDown, Folder,
 } from "lucide-react";
 
 type Lease = { id: string; title: string; status: string; deadlines: number; needsReview: number };
@@ -49,12 +49,22 @@ export default function App() {
   const [busy, setBusy] = useState("");
   const [armMode, setArmMode] = useState<"demo" | "real">("demo");
   const [menuWhere, setMenuWhere] = useState<"none" | "ask" | "side">("none");
+  const [leasesOpen, setLeasesOpen] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logRef = useRef<HTMLDivElement>(null);
+
+  const toggleLeases = () => {
+    setLeasesOpen(o => {
+      window.localStorage.setItem("tickler-leases", o ? "closed" : "open");
+      return !o;
+    });
+  };
 
   useEffect(() => {
     const saved = window.localStorage.getItem("tickler-rail");
     if (saved === "collapsed") setCollapsed(true);
+    const leases = window.localStorage.getItem("tickler-leases");
+    if (leases === "closed") setLeasesOpen(false);
   }, []);
   const toggleRail = () => {
     setCollapsed(c => {
@@ -245,43 +255,64 @@ export default function App() {
         </nav>
 
         <div className="leases">
-          {!collapsed && <p className="leaseshead">Your leases</p>}
-          {leases.length === 0 && !collapsed && <p className="leasesempty">nothing here yet</p>}
-          {leases.map(l => (
-            <button key={l.id} className={`leaserow ${leaseId === l.id ? "active" : ""}`}
-              onClick={() => pickLease(l.id)}
-              title={`${l.id} — ${STATUS_LABEL[l.status]?.label ?? l.status}`}>
-              <CircleDot size={12} className={`dot ${STATUS_DOT[l.status] ?? ""}`} />
-              {!collapsed && (
-                <span className="leasename">
-                  {l.id}
-                  {l.needsReview ? <em>{l.needsReview}</em> : null}
-                </span>
-              )}
-            </button>
-          ))}
           {!collapsed && (
-            <div className="addwrap">
-              <button className="railitem addlease" onClick={() => setMenuWhere(w => (w === "side" ? "none" : "side"))}>
-                <Plus size={15} /> <span>Add lease</span>
-              </button>
-              {menuWhere === "side" && attachMenu("side")}
-            </div>
+            <button className="leaseshead" onClick={toggleLeases} title={leasesOpen ? "Hide the lease list" : "Show the lease list"}>
+              <span>Your leases</span>
+              {leases.some(l => l.needsReview) && <em>{leases.reduce((n, l) => n + l.needsReview, 0)}</em>}
+              <ChevronDown size={13} className={`chev ${leasesOpen ? "" : "closed"}`} />
+            </button>
+          )}
+          {collapsed && (
+            <button className="railitem" title={`Your leases (${leases.length}) — click to expand`}
+              onClick={toggleRail}>
+              <Folder size={17} strokeWidth={1.8} />
+              {leases.some(l => l.needsReview) ? <em>•</em> : null}
+            </button>
+          )}
+          {!collapsed && leasesOpen && (
+            <>
+              {leases.length === 0 && <p className="leasesempty">nothing here yet</p>}
+              <div className="leaselist">
+                {leases.map(l => (
+                  <button key={l.id} className={`leaserow ${leaseId === l.id ? "active" : ""}`}
+                    onClick={() => pickLease(l.id)}
+                    title={`${l.id} — ${STATUS_LABEL[l.status]?.label ?? l.status}`}>
+                    <CircleDot size={12} className={`dot ${STATUS_DOT[l.status] ?? ""}`} />
+                    <span className="leasename">
+                      {l.id}
+                      {l.needsReview ? <em>{l.needsReview}</em> : null}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <div className="addwrap">
+                <button className="railitem addlease" onClick={() => setMenuWhere(w => (w === "side" ? "none" : "side"))}>
+                  <Plus size={15} /> <span>Add lease</span>
+                </button>
+                {menuWhere === "side" && attachMenu("side")}
+              </div>
+            </>
           )}
         </div>
 
         {!collapsed && (
           <div className="railfoot">
-            <div className="progress">
-              <div className="progress-label"><span>Setup</span><b>{doneCount}/4</b></div>
-              <div className="progress-track"><div style={{ width: `${(doneCount / 4) * 100}%` }} /></div>
+            <div className="stepper">
+              {steps.map((s, i) => (
+                <div className={`step ${s.done ? "done" : ""} ${i === steps.findIndex(x => !x.done) ? "next" : ""}`} key={s.label}
+                  title={s.label}>
+                  <div className="stepline" />
+                  <div className="stepdot">{s.done ? <Check size={10} /> : i + 1}</div>
+                  <div className="steplabel">{s.label.split(" ")[0]}</div>
+                </div>
+              ))}
+            </div>
+            <p className="stephint">
               {(() => {
                 const next = steps.findIndex(s => !s.done);
-                return next === -1
-                  ? <p className="nextdone">all set ✓</p>
-                  : <p className="next">next: {steps[next].label.toLowerCase()}</p>;
+                return next === -1 ? "all set ✓" : steps[next].label;
               })()}
-            </div>
+            </p>
           </div>
         )}
       </aside>
