@@ -2,7 +2,7 @@
 
 An agent that reads your lease documents, remembers the deadlines hiding in them, and never lets one slip.
 
-Leases bury their important dates in prose: renewal notice windows, rent escalation schedules, deposit return deadlines. Tickler extracts those terms into a knowledge graph — every fact anchored to the exact sentence it came from — schedules durable reminders that survive crashes, and drafts the notice letters you'll eventually need, with the source text cited line-by-line.
+Leases bury their important dates in prose: renewal notice windows, rent escalation schedules, deposit return deadlines. Tickler extracts those terms into a knowledge graph, anchors every fact to the exact sentence it came from, schedules durable reminders that survive crashes, and drafts the notice letters you'll eventually need, with the source text cited line-by-line.
 
 ## How it works
 
@@ -18,10 +18,10 @@ flowchart LR
     F --> I["email alert"]
 ```
 
-- **FalkorDB is the only datastore** — pages, clauses, quotes, deadlines, reminders, agent memory, drafts. The agent's tools are Cypher queries; its context is the graph. Remove FalkorDB and nothing works, by design.
-- **Grounded extraction** — every extracted quote is validated as a verbatim substring of the source page before it enters the graph. The model never gets trusted on what the document says.
-- **Durable timers** — reminders are Temporal workflows. Kill the process mid-wait, restart it, the timer still fires. "The deadline machine forgot" is the failure this exists to prevent.
-- **Human in the loop** — extraction review before deadlines arm; drafts are born pending and only a human approves them.
+- **FalkorDB is the only datastore**: pages, clauses, quotes, deadlines, reminders, agent memory, drafts. The agent's tools are Cypher queries; its context is the graph. Remove FalkorDB and nothing works, by design.
+- **Grounded extraction**: every extracted quote is validated as a verbatim substring of the source page before it enters the graph. The model never gets trusted on what the document says.
+- **Durable timers**: reminders are Temporal workflows. Kill the process mid-wait, restart it, the timer still fires. "The deadline machine forgot" is the failure this exists to prevent.
+- **Human in the loop**: extraction review before deadlines arm; drafts are born pending and only a human approves them.
 
 ## Try it live
 
@@ -29,11 +29,11 @@ Tickler runs in production on Render: **<https://tickler-web.onrender.com>**
 
 ![The Tickler dashboard: chat with the assistant, every answer cited from the lease](docs/images/dashboard-chat.png)
 
-Load a sample lease, check the extracted details against the source PDF (every sentence opens the document with the quote highlighted), approve, and the durable reminder chains arm themselves — the first alert arrives in about 24 seconds in demo mode, email included. Or deploy your own copy with the one-click blueprint at the bottom of this page.
+Load a sample lease, check the extracted details against the source PDF (every sentence opens the document with the quote highlighted), approve, and the durable reminder chains arm themselves; the first alert arrives in about 24 seconds in demo mode, email included. Or deploy your own copy with the one-click blueprint at the bottom of this page.
 
 ## Stack
 
-Next.js (UI) · OpenAI-compatible tool loop + MCP server (the Concierge agent) · FalkorDB (graph) · Temporal (durable workflows) · Groq serving open-weight models (`openai/gpt-oss-20b`, `openai/gpt-oss-120b` — Apache 2.0).
+Next.js (UI) · OpenAI-compatible tool loop + MCP server (the Concierge agent) · FalkorDB (graph) · Temporal (durable workflows) · Groq serving open-weight models (`openai/gpt-oss-20b`, `openai/gpt-oss-120b`, Apache 2.0).
 
 ## Setup
 
@@ -54,11 +54,11 @@ node worker/hello-client.mjs       # durable hello-timer (~5s)
 
 ## Corpus
 
-`corpus/` holds 12 fully synthetic lease agreements (fictional parties and addresses) with ground-truth answers derived at generation time — see `corpus/README.md`. Regenerate with `node corpus/generate.mjs`. Three of the twelve are a sealed hold-out set under `eval/holdout/` used once for final measurement.
+`corpus/` holds 12 fully synthetic lease agreements (fictional parties and addresses) with ground-truth answers derived at generation time (see `corpus/README.md`). Regenerate with `node corpus/generate.mjs`. Three of the twelve are a sealed hold-out set under `eval/holdout/`, used once for final measurement.
 
 ## The graph model
 
-FalkorDB holds the entire state of the product — document, extraction, timers, agent decisions, human corrections, and memory are all nodes in one graph:
+FalkorDB holds the entire state of the product: document, extraction, timers, agent decisions, human corrections, and memory are all nodes in one graph:
 
 ```mermaid
 graph LR
@@ -98,16 +98,16 @@ OPTIONAL MATCH (c)-[:GROUNDS]->(q:Quote)
 RETURN f.key, f.value, c.type, q.text, q.pageIdx
 ```
 
-Reminders fire because a `:Reminder` node says so. A drafted letter can prove its own claims, because `:Draft` nodes cite the exact `:Quote` nodes they were written from. Delete FalkorDB and nothing works — by design.
+Reminders fire because a `:Reminder` node says so. A drafted letter can prove its own claims, because `:Draft` nodes cite the exact `:Quote` nodes they were written from. Delete FalkorDB and nothing works, by design.
 
 ## Docs
 
-- [`docs/graph-model.md`](docs/graph-model.md) — nodes, edges, and the invariants that keep every answer anchored
-- [`docs/cypher.md`](docs/cypher.md) — every query the product depends on
+- [`docs/graph-model.md`](docs/graph-model.md): nodes, edges, and the invariants that keep every answer anchored
+- [`docs/cypher.md`](docs/cypher.md): every query the product depends on
 
 ## Status
 
-Deployed and working end to end: upload → grounded extraction (100% field and deadline accuracy on a 12-lease synthetic corpus, 9 dev + 3 sealed hold-out) → durable reminders → cited answers with PDF evidence → alerts and drafted letters, in production on Render. Limits we own: accuracy is measured on synthetic leases with regular prose — real attorney-drafted leases are the next frontier; text-layer PDFs only; a human approves every abstract and every letter.
+Deployed and working end to end: upload → grounded extraction (100% field and deadline accuracy on a 12-lease synthetic corpus, 9 dev + 3 sealed hold-out) → durable reminders → cited answers with PDF evidence → alerts and drafted letters, in production on Render. Limits we own: accuracy is measured on synthetic leases with regular prose; real attorney-drafted leases are the next frontier; text-layer PDFs only; a human approves every abstract and every letter.
 
 ## Running the app locally
 
@@ -116,7 +116,7 @@ Deployed and working end to end: upload → grounded extraction (100% field and 
 cp .env web/.env.local          # Next reads env from its own directory
 cd web && npm install && npm run dev   # UI at http://localhost:3000
 
-# separate terminal — the worker that runs reminder workflows
+# separate terminal: the worker that runs reminder workflows
 cd worker && npm install && node worker.mjs
 ```
 
