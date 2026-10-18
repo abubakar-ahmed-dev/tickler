@@ -1,6 +1,6 @@
 # Tickler: the lease-deadline agent that proves every answer
 
-**Links:** [Repository](https://github.com/abubakar-ahmed-dev/tickler) · [Live demo](https://tickler-web.onrender.com) · [Demo video](VIDEO_LINK)
+**Links:** [Repository](https://github.com/abubakar-ahmed-dev/tickler) · [Live demo](https://tickler-web.onrender.com)
 
 ---
 
@@ -132,11 +132,11 @@ You can try the result at [tickler-web.onrender.com](https://tickler-web.onrende
 
 - **Model the state first; the features follow.** Deciding that process state, agent memory, and corrections all live in one graph deleted entire categories of plumbing. The features we are proudest of (lineage on click, letters that cite themselves) were cheap because the graph was already there.
 - **Verify in code what you would be tempted to prompt.** "Always cite the source" is a suggestion. A substring check is a guarantee. The gap between those two is most of the distance between a demo and a product.
-- **Durability is a product feature, not infrastructure.** The kill-the-worker demo is the most convincing twenty seconds of our video, and it exists because we chose a workflow engine over a scheduler early.
+- **Durability is a product feature, not infrastructure.** The kill-the-worker demo is the most convincing thing about this product, and it exists because we chose a workflow engine over a scheduler early.
 - **Open weights were enough.** Both agents and the extractor run on gpt-oss (Apache 2.0) via Groq: structured outputs, tool calls, drafting quality. No closed model anywhere in the pipeline, which mattered to us for a document-sensitive product.
 
 Tickler reads, reminds, and drafts. The human decides. The graph remembers everything.
 
-**Try it:** [tickler-web.onrender.com](https://tickler-web.onrender.com) · **Code:** [github.com/abubakar-ahmed-dev/tickler](https://github.com/abubakar-ahmed-dev/tickler) · **Video:** [VIDEO_LINK]
+**Try it:** [tickler-web.onrender.com](https://tickler-web.onrender.com) · **Code:** [github.com/abubakar-ahmed-dev/tickler](https://github.com/abubakar-ahmed-dev/tickler)
 
 *Disclosure: this post was drafted with AI assistance and engineered, fact-checked, and shipped by the Tickler team.*
