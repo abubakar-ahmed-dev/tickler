@@ -8,7 +8,9 @@ import {
   MessageSquare, ListChecks, CalendarClock, Bell, Upload, Sparkles,
   ArrowRight, Check, Quote, Zap, ShieldCheck, FileText, Paperclip,
   PanelLeftClose, PanelLeftOpen, Plus, CircleDot, ChevronDown, Folder, User,
+  ScanSearch,
 } from "lucide-react";
+import PdfPeek from "./pdf-peek";
 
 type Lease = { id: string; title: string; status: string; deadlines: number; needsReview: number };
 type Citation = { deadline: { type: string; date: string; needsReview?: boolean }; clause?: string; chain: Array<{ step: string; detail: string }> };
@@ -86,6 +88,8 @@ export default function App() {
   const [menuWhere, setMenuWhere] = useState<"none" | "ask" | "side">("none");
   const [leasesOpen, setLeasesOpen] = useState(true);
   const [openCites, setOpenCites] = useState<Record<number, number | undefined>>({});
+  // evidence peek: one shared PDF viewer; opening another card swaps its content
+  const [peek, setPeek] = useState<{ quote: string; page: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logRef = useRef<HTMLDivElement>(null);
 
@@ -452,11 +456,17 @@ export default function App() {
                                     </div>
                                     {quotes.length > 0 ? quotes.map((s, k) => {
                                       const pageM = s.detail.match(/page (\d+)\)?$/i);
+                                      const pg = pageM ? Number(pageM[1]) : null;
                                       return (
                                         <div className="cd-quote" key={k}>
                                           <Quote size={11} />
                                           <span>“{stripPage(s.detail)}”</span>
-                                          {pageM && <span className="pg">page {Number(pageM[1]) + 1}</span>}
+                                          {pg != null && (
+                                            <button className="pg pgbtn" title="Open the lease PDF with this sentence highlighted"
+                                              onClick={() => setPeek({ quote: stripPage(s.detail), page: pg })}>
+                                              <ScanSearch size={11} /> page {pg + 1}
+                                            </button>
+                                          )}
                                         </div>
                                       );
                                     }) : (
@@ -574,7 +584,15 @@ export default function App() {
                       onChange={e => setEdits(s => ({ ...s, [f.key]: e.target.value }))}
                       placeholder={f.value === "unknown" ? "not written in the lease" : f.value} />
                     {f.quote
-                      ? <div className="fsource"><Quote size={12} /> <span>“{f.quote.slice(0, 170)}”</span> <span className="pg">page {(f.page ?? 0) + 1}</span></div>
+                      ? (
+                        <div className="fsource">
+                          <Quote size={12} /> <span>“{f.quote.slice(0, 170)}”</span> <span className="pg">page {(f.page ?? 0) + 1}</span>
+                          <button className="fsbtn" onClick={() => setPeek({ quote: f.quote!, page: f.page ?? 0 })}
+                            title="Open the lease PDF with this sentence highlighted">
+                            <ScanSearch size={13} /> View in PDF
+                          </button>
+                        </div>
+                      )
                       : <div className="fsource none">no source sentence: {f.value === "unknown" ? "not written in the lease" : "set by you"}</div>}
                   </div>
                 ))}
@@ -696,6 +714,11 @@ export default function App() {
               </div>
             )}
           </section>
+        )}
+
+        {/* evidence peek: single shared PDF viewer */}
+        {peek && leaseId && (
+          <PdfPeek leaseId={leaseId} target={peek} onClose={() => setPeek(null)} />
         )}
       </div>
     </div>

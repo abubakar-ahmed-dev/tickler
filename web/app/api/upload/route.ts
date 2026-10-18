@@ -15,7 +15,10 @@ export async function POST(req: Request) {
   const title = (form.get("title") as string) || undefined;
   if (!file) return NextResponse.json({ error: "file required" }, { status: 400 });
   mkdirSync(TMP, { recursive: true });
-  const dest = join(TMP, file.name.replace(/[^\w.\-]+/g, "_"));
+  // save under the slugified stem so the lease id matches the file name
+  // (the evidence viewer looks PDFs up by id)
+  const stem = file.name.replace(/\.pdf$/i, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "lease";
+  const dest = join(TMP, `${stem}.pdf`);
   writeFileSync(dest, Buffer.from(await file.arrayBuffer()));
   try {
     const r = await ingestLease(dest, title ?? file.name.replace(/\.pdf$/i, ""));
