@@ -138,5 +138,3 @@ You can try the result at [tickler-web.onrender.com](https://tickler-web.onrende
 Tickler reads, reminds, and drafts. The human decides. The graph remembers everything.
 
 **Try it:** [tickler-web.onrender.com](https://tickler-web.onrender.com) · **Code:** [github.com/abubakar-ahmed-dev/tickler](https://github.com/abubakar-ahmed-dev/tickler)
-
-*Disclosure: this post was drafted with AI assistance and engineered, fact-checked, and shipped by the Tickler team.*
