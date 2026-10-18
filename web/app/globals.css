@@ -466,7 +466,7 @@ input[type=radio] { accent-color: var(--accent); }
 .pp-nav .btn:disabled { opacity: .4; cursor: default; }
 .pp-nav .btn.icon { padding: 6px; }
 .pp-count { font-size: 11.5px; color: var(--dim); min-width: 92px; text-align: center; }
-.pp-body { flex: 1; overflow: auto; padding: 18px; display: flex; justify-content: center; align-items: flex-start; background: radial-gradient(circle at 50% 0%, rgba(255,255,255,.02), transparent 60%); }
+.pp-body { position: relative; flex: 1; overflow: auto; padding: 18px; display: flex; justify-content: center; align-items: flex-start; background: radial-gradient(circle at 50% 0%, rgba(255,255,255,.02), transparent 60%); }
 .pp-page { position: relative; background: #fff; border-radius: 4px; box-shadow: 0 8px 30px rgba(0,0,0,.35); line-height: 0; }
 .pp-page canvas { display: block; border-radius: 4px; }
 .pp-hl { position: absolute; background: rgba(227,179,65,.38); border: 1.5px solid rgba(227,179,65,.85); border-radius: 3px; mix-blend-mode: multiply; pointer-events: none; animation: hlpop .6s ease; }
@@ -475,8 +475,8 @@ input[type=radio] { accent-color: var(--accent); }
 .pp-foot svg { flex: none; transform: translateY(2px); color: var(--accent); }
 .pp-foot span { font-style: italic; color: var(--text); }
 .pp-foot em { margin-left: auto; font-style: normal; font-size: 11px; white-space: nowrap; }
-.pp-loading { position: absolute; display: flex; align-items: center; gap: 10px; color: var(--dim); font-size: 13px; padding-top: 10vh; }
-.pp-error { position: absolute; color: var(--bad); font-size: 13px; padding-top: 10vh; max-width: 420px; text-align: center; }
+.pp-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--dim); font-size: 13px; }
+.pp-error { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--bad); font-size: 13px; max-width: none; text-align: center; }
 .spinner { width: 15px; height: 15px; border: 2px solid var(--line2); border-top-color: var(--accent); border-radius: 99px; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (max-width: 640px) {

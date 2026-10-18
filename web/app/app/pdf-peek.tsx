@@ -109,7 +109,10 @@ export default function PdfPeek({ leaseId, target, onClose }: { leaseId: string;
           const j = await r.json().catch(() => ({}));
           throw new Error(j.error || `could not load the PDF (${r.status})`);
         }
-        const pdfjs = await import("pdfjs-dist");
+        // load pdf.js natively from /public — no bundler involvement in dev,
+        // and the library always matches the vendored worker's version
+        const nativeImport = new Function("u", "return import(u)") as (u: string) => Promise<typeof import("pdfjs-dist")>;
+        const pdfjs = await nativeImport("/pdfjs/pdf.min.mjs");
         pdfjs.GlobalWorkerOptions.workerSrc = "/pdfjs/pdf.worker.min.mjs";
         const task = pdfjs.getDocument({
           data: new Uint8Array(await r.arrayBuffer()),
@@ -128,6 +131,7 @@ export default function PdfPeek({ leaseId, target, onClose }: { leaseId: string;
   useEffect(() => {
     if (!doc) return;
     let dead = false;
+    let task: { cancel: () => void; promise: Promise<void> } | null = null;
     (async () => {
       try {
         const page = await doc.getPage(Math.min(pageIndex + 1, doc.numPages));
@@ -144,14 +148,16 @@ export default function PdfPeek({ leaseId, target, onClose }: { leaseId: string;
         canvas.height = viewportGpu.height;
         canvas.style.width = `${viewportCss.width}px`;
         canvas.style.height = `${viewportCss.height}px`;
-        await page.render({ canvas, viewport: viewportGpu }).promise;
+        task = page.render({ canvas, viewport: viewportGpu });
+        await task.promise;
         if (dead) return;
         setPageLabel(Math.min(pageIndex + 1, doc.numPages));
         const found = pageIndex === target.page ? await highlightBoxes(page, viewportCss, target.quote) : null;
         setBoxes(found);
       } catch (e) { if (!dead) setError((e as Error).message); }
     })();
-    return () => { dead = true; };
+    // cancel an in-flight render so a quick page flip never fights over the canvas
+    return () => { dead = true; task?.cancel(); };
   }, [doc, pageIndex, target.page, target.quote]);
 
   return (
