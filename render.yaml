@@ -33,7 +33,7 @@ services:
     plan: starter
     envVars:
       - key: DB
-        value: postgresql12
+        value: postgres12
       - key: DB_PORT
         value: "5432"
       - key: POSTGRES_SEEDS
