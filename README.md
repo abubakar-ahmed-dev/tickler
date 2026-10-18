@@ -31,6 +31,8 @@ Tickler runs in production on Render: **<https://tickler-web.onrender.com>**
 
 Load a sample lease, check the extracted details against the source PDF (every sentence opens the document with the quote highlighted), approve, and the durable reminder chains arm themselves; the first alert arrives in about 24 seconds in demo mode, email included. Or deploy your own copy with the one-click blueprint at the bottom of this page.
 
+> Note on alert emails: the demo deployment sends email through Resend's free tier, which only delivers to the account owner's address (abubakar.ahmed.dev@gmail.com). Run your own copy with your own Resend key and domain to deliver anywhere.
+
 ## Stack
 
 Next.js (UI) · OpenAI-compatible tool loop + MCP server (the Concierge agent) · FalkorDB (graph) · Temporal (durable workflows) · Groq serving open-weight models (`openai/gpt-oss-20b`, `openai/gpt-oss-120b`, Apache 2.0).
