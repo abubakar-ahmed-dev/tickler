@@ -7,8 +7,6 @@ AGENTS.md
 # Local binaries (temporal CLI etc.)
 .tools/
 
-# Generated corpus PDFs (regenerate via corpus/generate.mjs)
-corpus/pdfs/
 
 # Local-only working docs
 *.local.md
@@ -40,6 +38,4 @@ venv/
 tmp/
 *.tmp
 
-# Generated holdout PDFs (regenerate via corpus/generate.mjs)
-eval/holdout/pdfs/
 tmp-uploads/
