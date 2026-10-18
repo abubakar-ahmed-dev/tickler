@@ -6,16 +6,16 @@ Leases bury their important dates in prose: renewal notice windows, rent escalat
 
 ## How it works
 
-```
-lease PDF ──► ingestion ──► FalkorDB graph ◄── Concierge agent (chat, cited answers)
-                              │        ▲
-                              ▼        │ reads context
-                          Temporal ────┘
-                     durable reminder timers
-                              │ fires
-                              ▼
-                      Watcher agent ── handoff ──► Drafter agent
-                                              (grounded letter, pending human approval)
+```mermaid
+flowchart LR
+    A["lease PDF"] --> B["ingestion + grounded extraction"]
+    B --> C[("FalkorDB graph")]
+    C <--> D["Concierge agent<br/>(chat, cited answers)"]
+    C --> E["Temporal<br/>durable reminder timers"]
+    E -->|fires| F["Watcher agent"]
+    F -->|escalates| G["Drafter agent"]
+    G --> H["grounded letter<br/>(pending human approval)"]
+    F --> I["email alert"]
 ```
 
 - **FalkorDB is the only datastore** — pages, clauses, quotes, deadlines, reminders, agent memory, drafts. The agent's tools are Cypher queries; its context is the graph. Remove FalkorDB and nothing works, by design.
@@ -26,6 +26,8 @@ lease PDF ──► ingestion ──► FalkorDB graph ◄── Concierge agent
 ## Try it live
 
 Tickler runs in production on Render: **<https://tickler-web.onrender.com>**
+
+![The Tickler dashboard: chat with the assistant, every answer cited from the lease](docs/images/dashboard-chat.png)
 
 Load a sample lease, check the extracted details against the source PDF (every sentence opens the document with the quote highlighted), approve, and the durable reminder chains arm themselves — the first alert arrives in about 24 seconds in demo mode, email included. Or deploy your own copy with the one-click blueprint at the bottom of this page.
 
@@ -56,18 +58,37 @@ node worker/hello-client.mjs       # durable hello-timer (~5s)
 
 ## The graph model
 
-FalkorDB holds the entire state of the product. Every node type, every edge:
+FalkorDB holds the entire state of the product — document, extraction, timers, agent decisions, human corrections, and memory are all nodes in one graph:
 
-```text
-(Lease)-[HAS_PAGE]->(Page)                            verbatim text, one node per page
-(Lease)-[HAS_CLAUSE]->(Clause)-[GROUNDS]->(Quote)     quotes verified word-for-word on a page
-(Clause)-[YIELDS]->(Field)                            extracted values, confidence, approved flag
-(Field)-[DERIVES]->(Deadline)-[SCHEDULED]->(Reminder) dates computed in code, timers in Temporal
-(Alert)-[ABOUT]->(Deadline)                           what the Watcher agent decided, and why
-(Alert)-[TRIGGERED]->(Draft)-[CITES]->(Quote)         letters cite the sentences that justify them
-(Correction)-[EDITS]->(Field)                         every human fix, kept as history
-(Session)-[HAS_TURN]->(Memory)-[ABOUT]->(Lease)       what the assistant remembers about you
+```mermaid
+graph LR
+    Lease -->|HAS_PAGE| Page
+    Lease -->|HAS_CLAUSE| Clause
+    Clause -->|GROUNDS| Quote
+    Quote -.->|verified on| Page
+    Clause -->|YIELDS| Field
+    Field -->|DERIVES| Deadline
+    Deadline -->|SCHEDULED| Reminder
+    Alert -->|ABOUT| Deadline
+    Alert -->|TRIGGERED| Draft
+    Draft -->|CITES| Quote
+    Correction -->|EDITS| Field
+    Session -->|HAS_TURN| Memory
+    Memory -->|ABOUT| Lease
+
+    classDef doc fill:#1f2830,stroke:#4cc38a,color:#e6edf3
+    classDef extract fill:#1f2830,stroke:#8b98a5,color:#e6edf3
+    classDef time fill:#3a2f14,stroke:#e3b341,color:#e6edf3
+    classDef agent fill:#14301f,stroke:#4cc38a,color:#e6edf3
+    classDef human fill:#2a1a33,stroke:#b98ef7,color:#e6edf3
+    class Lease,Page doc
+    class Clause,Quote,Field extract
+    class Deadline,Reminder time
+    class Alert,Draft agent
+    class Correction,Session,Memory human
 ```
+
+What the edges mean: `Quote` nodes are verified word-for-word against their `Page` before they enter the graph. `Field` nodes carry the approved values; `Deadline` dates are computed from them in pure code. `Reminder` nodes are what Temporal schedules. `Alert` nodes record what the Watcher agent decided and why, and `Draft` letters cite the exact `:Quote` nodes they were written from. `Correction` keeps every human fix as history rather than an overwrite.
 
 **The graph does the work.** The Concierge agent has no private knowledge: its six MCP tools (`next_deadlines`, `lineage`, `find_lease`, `recall`, `remember`, `request_draft`) are each a parameterized Cypher query, and every answer must carry the quote and page it walked. The lineage query behind every "where did this come from?" button:
 
