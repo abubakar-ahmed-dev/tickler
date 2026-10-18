@@ -28,6 +28,32 @@ function applyTransform(m: number[], t: number[]): number[] {
   ];
 }
 
+// pdf.js is loaded once per session from /public (native ES module, no
+// bundler involvement) and kept on a single shared worker that is never
+// destroyed — per-dialog documents just attach to it and tear down alone.
+type PdfjsLib = typeof import("pdfjs-dist");
+let libPromise: Promise<PdfjsLib> | null = null;
+let workerPromise: Promise<import("pdfjs-dist").PDFWorker> | null = null;
+
+function loadPdfjs(): Promise<PdfjsLib> {
+  libPromise ??= (async () => {
+    const nativeImport = new Function("u", "return import(u)") as (u: string) => Promise<PdfjsLib>;
+    const lib = await nativeImport("/pdfjs/pdf.min.mjs");
+    lib.GlobalWorkerOptions.workerSrc = "/pdfjs/pdf.worker.min.mjs";
+    return lib;
+  })();
+  return libPromise;
+}
+
+function sharedWorker(pdfjs: PdfjsLib) {
+  workerPromise ??= (async () => {
+    const w = new pdfjs.PDFWorker();
+    await w.promise;
+    return w;
+  })().catch(e => { workerPromise = null; throw e; });
+  return workerPromise;
+}
+
 /** Find the quote on the page and return merged line boxes in viewport CSS px. */
 async function highlightBoxes(page: PDFPageProxy, viewport: { transform: number[]; scale: number }, quote: string) {
   const tc = await page.getTextContent();
@@ -85,7 +111,6 @@ export default function PdfPeek({ leaseId, target, onClose }: { leaseId: string;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const taskRef = useRef<{ destroy: () => Promise<void> } | null>(null);
 
   // esc to close, backdrop click handled in markup
   useEffect(() => {
@@ -99,9 +124,12 @@ export default function PdfPeek({ leaseId, target, onClose }: { leaseId: string;
     };
   }, [onClose]);
 
-  // load the document once per lease; the loading task owns teardown
+  // load the document once per lease, on the session-wide shared worker.
+  // Cleanup uses a local task variable (not a ref) so React's double-mount
+  // can never destroy the wrong document or race a sibling effect run.
   useEffect(() => {
     let dead = false;
+    let task: { destroy: () => Promise<void> } | null = null;
     (async () => {
       try {
         const r = await fetch(`/api/lease-pdf?leaseId=${encodeURIComponent(leaseId)}`);
@@ -109,22 +137,21 @@ export default function PdfPeek({ leaseId, target, onClose }: { leaseId: string;
           const j = await r.json().catch(() => ({}));
           throw new Error(j.error || `could not load the PDF (${r.status})`);
         }
-        // load pdf.js natively from /public — no bundler involvement in dev,
-        // and the library always matches the vendored worker's version
-        const nativeImport = new Function("u", "return import(u)") as (u: string) => Promise<typeof import("pdfjs-dist")>;
-        const pdfjs = await nativeImport("/pdfjs/pdf.min.mjs");
-        pdfjs.GlobalWorkerOptions.workerSrc = "/pdfjs/pdf.worker.min.mjs";
-        const task = pdfjs.getDocument({
+        const pdfjs = await loadPdfjs();
+        if (dead) return;
+        const worker = await sharedWorker(pdfjs);
+        const t = pdfjs.getDocument({
           data: new Uint8Array(await r.arrayBuffer()),
           standardFontDataUrl: "/pdfjs/standard_fonts/",
+          worker,
         });
-        taskRef.current = task;
-        const d = await task.promise;
-        if (dead) { taskRef.current?.destroy(); return; }
+        task = t;
+        const d = await t.promise;
+        if (dead) { t.destroy(); return; }
         setDoc(d);
       } catch (e) { if (!dead) setError((e as Error).message); }
     })();
-    return () => { dead = true; taskRef.current?.destroy(); taskRef.current = null; };
+    return () => { dead = true; task?.destroy(); };
   }, [leaseId]);
 
   // render the current page (canvas at device resolution, boxes at CSS size)
