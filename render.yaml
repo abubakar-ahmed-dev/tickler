@@ -72,10 +72,7 @@ services:
           name: tickler-falkordb
           property: host
       - key: FALKORDB_PORT
-        fromService:
-          type: pserv
-          name: tickler-falkordb
-          property: port
+        value: "6379"
       - key: FALKORDB_PASSWORD
         sync: false
       - key: TEMPORAL_ADDRESS
@@ -105,10 +102,7 @@ services:
           name: tickler-falkordb
           property: host
       - key: FALKORDB_PORT
-        fromService:
-          type: pserv
-          name: tickler-falkordb
-          property: port
+        value: "6379"
       - key: FALKORDB_PASSWORD
         sync: false
       - key: TEMPORAL_ADDRESS
