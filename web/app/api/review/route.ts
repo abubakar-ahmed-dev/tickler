@@ -5,7 +5,7 @@
 // mode "real": 90/30/7 days before each deadline date.
 import { NextResponse } from "next/server";
 import { applyApprovalActivity, armLeaseActivity, setStatusActivity } from "../../../../worker/activities.mjs";
-import { Client } from "@temporalio/client";
+import { Client, Connection } from "@temporalio/client";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -15,6 +15,7 @@ const REAL_LEADS = [90, 30, 7].map(d => d * 86400000);
 
 export async function POST(req: Request) {
   const { leaseId, corrections = [], arm = true, mode = "real" } = await req.json();
+  let connection: Connection | null = null;
   if (!leaseId) return NextResponse.json({ error: "leaseId required" }, { status: 400 });
   try {
     const applied = await applyApprovalActivity({ leaseId, corrections });
@@ -26,7 +27,10 @@ export async function POST(req: Request) {
         leaseId: string; deadlineType: string; deadlineDate: string;
         steps: Array<{ reminderId: string; leadMs: number; delayMs: number }>;
       }>;
-      const client = new Client();
+      connection = await Connection.connect({
+        address: process.env.TEMPORAL_ADDRESS ?? "localhost:7233",
+      });
+      const client = new Client({ connection });
       for (const spec of specs) {
         await client.workflow.start("DeadlineReminderWorkflow", {
           taskQueue: "tickler",
@@ -42,5 +46,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ...applied, armed, firstFireSec, mode });
   } catch (e: unknown) {
     return NextResponse.json({ error: (e as Error).message }, { status: 502 });
+  } finally {
+    connection?.close().catch(() => {});
   }
 }

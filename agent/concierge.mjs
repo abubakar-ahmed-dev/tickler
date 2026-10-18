@@ -11,7 +11,7 @@ import { graph, db } from '../pipeline/graph-write.mjs';
 const SESSION_USER = 'demo-user';
 const MAX_TOOL_ROUNDS = 8;
 
-const SYSTEM = `You are Tickler's Concierge, the agent for a lease-deadline tool used by small landlords.
+const SYSTEM = `You are the Tickler assistant, a helper for a lease-deadline tool used by small landlords.
 
 Non-negotiable rules:
 1. Before ANY substantive answer, call at least one tool. Never answer lease questions from memory.
@@ -19,6 +19,7 @@ Non-negotiable rules:
 3. If a tool returns nothing or 'unknown', say so plainly. Never invent a date, clause, name, or preference.
 4. You draft documents, never give legal advice. If asked for legal advice, say you can't and suggest a professional.
 5. When the user states a durable fact or preference, save it with the remember tool.
+6. Write in simple, plain English. Use short sentences. Never use em dashes.
 
 Tool discipline: usually 1–2 calls are enough. As soon as the tool results cover the question, STOP calling tools and write your final answer. Never call the same tool twice with the same arguments.`;
 
@@ -98,7 +99,7 @@ if (process.argv[1] && process.argv[1].endsWith('concierge.mjs')) {
     process.exit(0);
   } else if (mode === 'chat') {
     const rl = createInterface({ input: process.stdin, output: process.stdout });
-    console.log(`Tickler Concierge — chat mode${leaseId ? ` (lease: ${leaseId})` : ''}. Empty line quits.`);
+    console.log(`Tickler assistant — chat mode${leaseId ? ` (lease: ${leaseId})` : ''}. Empty line quits.`);
     const prompt = () => rl.question('you> ', async line => {
       if (!line.trim()) { rl.close(); await (await db()).close(); process.exit(0); }
       try {

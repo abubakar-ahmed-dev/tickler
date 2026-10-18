@@ -42,3 +42,4 @@ tmp/
 
 # Generated holdout PDFs (regenerate via corpus/generate.mjs)
 eval/holdout/pdfs/
+tmp-uploads/

@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 export const maxDuration = 300;
 
 const CORPUS = join(process.cwd(), "..", "corpus", "pdfs");
-const TMP = join(process.cwd(), "..", "tmp-uploads");
+const TMP = process.env.UPLOAD_DIR ?? join(process.cwd(), "..", "tmp-uploads");
 const SAMPLES = ["lease-01", "lease-03", "lease-06"]; // anniversary+leap, fixed-escalation, 5% anniversary
 
 export async function POST() {
