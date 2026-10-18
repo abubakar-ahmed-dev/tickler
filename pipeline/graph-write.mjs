@@ -5,7 +5,11 @@ const { FalkorDB } = pkg;
 
 let _db = null;
 export async function db() {
-  if (!_db) _db = await FalkorDB.connect({ host: process.env.FALKORDB_HOST ?? 'localhost', port: Number(process.env.FALKORDB_PORT ?? 6379) });
+  if (!_db) _db = await FalkorDB.connect({
+    host: process.env.FALKORDB_HOST ?? 'localhost',
+    port: Number(process.env.FALKORDB_PORT ?? 6379),
+    password: process.env.FALKORDB_PASSWORD || undefined,
+  });
   return _db;
 }
 
