@@ -572,8 +572,9 @@ export default function App() {
                     )}
                   </div>
                 )}
-                {unapproved.map(f => (
+                {unapproved.map((f, i) => (
                   <div className="fieldcard" key={`${f.clause}-${f.key}-${f.page ?? "x"}`}>
+                    <span className="cardnum" title={`Detail ${i + 1} of ${unapproved.length}`}>{i + 1}</span>
                     <div className="fieldtop">
                       <span className="fkey">{f.key.replace(/_/g, " ")}</span>
                       <span className="clausechip">{f.clause.replace(/_/g, " ")}</span>
@@ -583,17 +584,19 @@ export default function App() {
                       value={f.value === "unknown" && edits[f.key] === undefined ? "" : edits[f.key] ?? f.value}
                       onChange={e => setEdits(s => ({ ...s, [f.key]: e.target.value }))}
                       placeholder={f.value === "unknown" ? "not written in the lease" : f.value} />
-                    {f.quote
-                      ? (
+                    {f.quote ? (
+                      <>
                         <div className="fsource">
                           <Quote size={12} /> <span>“{f.quote.slice(0, 170)}”</span> <span className="pg">page {(f.page ?? 0) + 1}</span>
+                        </div>
+                        <div className="fieldfoot">
                           <button className="fsbtn" onClick={() => setPeek({ quote: f.quote!, page: f.page ?? 0 })}
                             title="Open the lease PDF with this sentence highlighted">
-                            <ScanSearch size={13} /> View in PDF
+                            <ScanSearch size={14} /> View in PDF
                           </button>
                         </div>
-                      )
-                      : <div className="fsource none">no source sentence: {f.value === "unknown" ? "not written in the lease" : "set by you"}</div>}
+                      </>
+                    ) : <div className="fsource none">no source sentence: {f.value === "unknown" ? "not written in the lease" : "set by you"}</div>}
                   </div>
                 ))}
                 {unapproved.length > 0 && (
@@ -628,6 +631,7 @@ export default function App() {
               </div>
               <div className="ph-badges">
                 {leaseId && <span className="leasetag">{leaseId}</span>}
+                {state && state.deadlines.length > 0 && <span className="badge">{state.deadlines.length} in total</span>}
                 {scheduledCount > 0 && <span className="badge ok">{scheduledCount} reminders running</span>}
               </div>
             </header>
@@ -636,8 +640,9 @@ export default function App() {
             ) : (
               <div className="scroller">
                 {state?.deadlines.length === 0 && <div className="empty"><CalendarClock size={26} /><p>no deadlines yet, check the details first</p></div>}
-                {state?.deadlines.map(d => (
+                {state?.deadlines.map((d, i) => (
                   <div className="deadlinecard" key={d.type + d.date}>
+                    <span className="cardnum" title={`Deadline ${i + 1} of ${state.deadlines.length}`}>{i + 1}</span>
                     <div className="dl-left">
                       <span className="dl-type">{d.type.replace(/_/g, " ")}</span>
                       <b className={d.date === "unknown" ? "dim" : ""}>{d.date === "unknown" ? "date unknown" : d.date}</b>
@@ -669,6 +674,7 @@ export default function App() {
               </div>
               <div className="ph-badges">
                 {leaseId && <span className="leasetag">{leaseId}</span>}
+                {state && state.alerts.length > 0 && <span className="badge">{state.alerts.length} in total</span>}
                 {pendingDrafts.length > 0 && <span className="badge warn">{pendingDrafts.length} letter{pendingDrafts.length > 1 ? "s" : ""} waiting</span>}
               </div>
             </header>
@@ -691,8 +697,9 @@ export default function App() {
                       : "No alerts yet. Turn reminders on, and they will show up here as they fire."}</p>
                   </div>
                 )}
-                {state?.alerts.map(a => (
+                {[...(state?.alerts ?? [])].sort((a, b) => b.at.localeCompare(a.at)).map((a, i) => (
                   <div className={`alertcard ${a.action}`} key={a.alertId}>
+                    <span className="cardnum" title={`Alert ${i + 1} of ${state!.alerts.length}`}>{i + 1}</span>
                     <div className="alerttop">
                       <span className={`badge ${a.action === "escalate" ? "bad" : a.action === "alert" ? "warn" : ""}`}>
                         {a.action === "escalate" ? "urgent, letter ready" : a.action === "alert" ? "heads up" : "waited"}
