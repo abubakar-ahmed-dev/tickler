@@ -54,6 +54,31 @@ node worker/hello-client.mjs       # durable hello-timer (~5s)
 
 `corpus/` holds 12 fully synthetic lease agreements (fictional parties and addresses) with ground-truth answers derived at generation time — see `corpus/README.md`. Regenerate with `node corpus/generate.mjs`. Three of the twelve are a sealed hold-out set under `eval/holdout/` used once for final measurement.
 
+## The graph model
+
+FalkorDB holds the entire state of the product. Every node type, every edge:
+
+```text
+(Lease)-[HAS_PAGE]->(Page)                            verbatim text, one node per page
+(Lease)-[HAS_CLAUSE]->(Clause)-[GROUNDS]->(Quote)     quotes verified word-for-word on a page
+(Clause)-[YIELDS]->(Field)                            extracted values, confidence, approved flag
+(Field)-[DERIVES]->(Deadline)-[SCHEDULED]->(Reminder) dates computed in code, timers in Temporal
+(Alert)-[ABOUT]->(Deadline)                           what the Watcher agent decided, and why
+(Alert)-[TRIGGERED]->(Draft)-[CITES]->(Quote)         letters cite the sentences that justify them
+(Correction)-[EDITS]->(Field)                         every human fix, kept as history
+(Session)-[HAS_TURN]->(Memory)-[ABOUT]->(Lease)       what the assistant remembers about you
+```
+
+**The graph does the work.** The Concierge agent has no private knowledge: its six MCP tools (`next_deadlines`, `lineage`, `find_lease`, `recall`, `remember`, `request_draft`) are each a parameterized Cypher query, and every answer must carry the quote and page it walked. The lineage query behind every "where did this come from?" button:
+
+```cypher
+MATCH (l:Lease {id:$id})-[:HAS_CLAUSE]->(c:Clause)-[:YIELDS]->(f:Field {key:$key})
+OPTIONAL MATCH (c)-[:GROUNDS]->(q:Quote)
+RETURN f.key, f.value, c.type, q.text, q.pageIdx
+```
+
+Reminders fire because a `:Reminder` node says so. A drafted letter can prove its own claims, because `:Draft` nodes cite the exact `:Quote` nodes they were written from. Delete FalkorDB and nothing works — by design.
+
 ## Docs
 
 - [`docs/graph-model.md`](docs/graph-model.md) — nodes, edges, and the invariants that keep every answer anchored
