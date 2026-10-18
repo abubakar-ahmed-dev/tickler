@@ -4,6 +4,7 @@ import { GROQ_BASE, GROQ_KEY, MODEL_FAST } from '../shared/config.mjs';
 import { ingestLease } from '../pipeline/ingest.mjs';
 import { extractLease, computeDeadlines } from '../pipeline/extract.mjs';
 import { graph, db } from '../pipeline/graph-write.mjs';
+import { sendAlertEmail } from './email.mjs';
 
 export async function ingestLeaseActivity({ pdfPath, title }) {
   return ingestLease(pdfPath, title);
@@ -153,6 +154,16 @@ Respond ONLY as JSON: {action: "alert"|"snooze"|"escalate", reason: string, aler
      CREATE (a:Alert {level:$level, message:$msg, reason:$reason, action:$action, createdAt:$now})-[:ABOUT]->(d)
      RETURN id(a) AS aid`,
     { params: { id: leaseId, type: deadlineType, date: deadlineDate, level, msg: decision.alert_message, reason: decision.reason, action: decision.action, now: new Date().toISOString() } });
+
+  // email delivery — best effort, a mail outage never blocks the alert
+  const mail = await sendAlertEmail({
+    leaseId, leaseTitle: row.title, deadlineType, deadlineDate,
+    action: decision.action, message: decision.alert_message,
+    urgency: decision.action === 'escalate' ? 'urgent' : 'normal',
+  });
+  if (mail.sent) {
+    await g.query(`MATCH (a) WHERE id(a)=$aid SET a.emailed=true`, { params: { aid: alert.data[0].aid } });
+  }
 
   let draft = null;
   if (decision.action === 'escalate') {
