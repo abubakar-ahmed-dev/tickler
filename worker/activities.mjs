@@ -4,6 +4,7 @@ import { GROQ_BASE, GROQ_KEY, MODEL_FAST } from '../shared/config.mjs';
 import { ingestLease } from '../pipeline/ingest.mjs';
 import { extractLease, computeDeadlines } from '../pipeline/extract.mjs';
 import { graph, db } from '../pipeline/graph-write.mjs';
+import { sendAlertEmail } from './email.mjs';
 
 export async function ingestLeaseActivity({ pdfPath, title }) {
   return ingestLease(pdfPath, title);
@@ -138,7 +139,7 @@ export async function reminderFiredActivity({ reminderId, leaseId, deadlineType,
   const decision = await groqChat([
     { role: 'system', content: `You are the Watcher agent for Tickler, a lease-deadline tool. Given a fired reminder's context, decide the action.
 Rules: "alert" = notify the user now. "snooze" = genuinely not urgent yet, skip this lead. "escalate" = urgent: hand off to the Drafter agent to prepare the notice letter. If finalLead is true this is the LAST reminder before the deadline — you must escalate.
-Respond ONLY as JSON: {action: "alert"|"snooze"|"escalate", reason: string, alert_message: string}. The alert_message is one human sentence.` },
+Respond ONLY as JSON: {action: "alert"|"snooze"|"escalate", reason: string, alert_message: string}. The alert_message is one short, plain sentence. Never use em dashes.` },
     { role: 'user', content: JSON.stringify({ lease: row.title, deadlineType, deadlineDate, clauseType: row.clauseType, quotes: row.quotes ?? [], leadMs, finalLead: Boolean(isFinal) }) },
   ], { jsonSchema: { name: 'watcher_decision', schema: { type: 'object', properties: { action: { type: 'string', enum: ['alert', 'snooze', 'escalate'] }, reason: { type: 'string' }, alert_message: { type: 'string' } }, required: ['action', 'reason', 'alert_message'] } } });
   // code guardrail: the final lead always escalates, whatever the model said
@@ -154,11 +155,21 @@ Respond ONLY as JSON: {action: "alert"|"snooze"|"escalate", reason: string, aler
      RETURN id(a) AS aid`,
     { params: { id: leaseId, type: deadlineType, date: deadlineDate, level, msg: decision.alert_message, reason: decision.reason, action: decision.action, now: new Date().toISOString() } });
 
+  // email delivery — best effort, a mail outage never blocks the alert
+  const mail = await sendAlertEmail({
+    leaseId, leaseTitle: row.title, deadlineType, deadlineDate,
+    action: decision.action, message: decision.alert_message,
+    urgency: decision.action === 'escalate' ? 'urgent' : 'normal',
+  });
+  if (mail.sent) {
+    await g.query(`MATCH (a) WHERE id(a)=$aid SET a.emailed=true`, { params: { aid: alert.data[0].aid } });
+  }
+
   let draft = null;
   if (decision.action === 'escalate') {
     const quotes = row.quotes?.filter(Boolean) ?? [];
     const letter = await groqChat([
-      { role: 'system', content: `You draft a short, professional notice letter for a landlord, grounded ONLY in the provided lease quotes and deadline. Do not invent dates or terms. 150 words max. Plain text.` },
+      { role: 'system', content: `You draft a short, professional notice letter for a landlord, grounded ONLY in the provided lease quotes and deadline. Do not invent dates or terms. 150 words max. Plain text. Write in simple, plain English and never use em dashes.` },
       { role: 'user', content: JSON.stringify({ lease: row.title, deadlineType, deadlineDate, clauseQuotes: quotes }) },
     ], {});
     const r = await g.query(

@@ -1,0 +1,484 @@
+{
+  "lease-10": {
+    "leaseId": "lease-10",
+    "fields": {
+      "term_start": {
+        "value": "2027-07-01",
+        "quote_text": "shall commence on July 1, 2027",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "term_start",
+        "grounded": true
+      },
+      "term_end": {
+        "value": "2028-06-30",
+        "quote_text": "shall continue through June 30, 2028",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "term_end",
+        "grounded": true
+      },
+      "monthly_rent": {
+        "value": "1550",
+        "quote_text": "monthly rent of $1,550.00",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "monthly_rent",
+        "grounded": true
+      },
+      "deposit": {
+        "value": "1550",
+        "quote_text": "sum of $1,550.00",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "deposit",
+        "grounded": true
+      },
+      "deposit_return_days": {
+        "value": "30",
+        "quote_text": "within 30 days after the end of the Term",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "deposit_return_days",
+        "grounded": true
+      },
+      "notice_days": {
+        "value": "90",
+        "quote_text": "not less than undefined (90) days prior",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "notice_days",
+        "grounded": true
+      },
+      "escalation_type": {
+        "value": "cpi",
+        "quote_text": "adjust on each anniversary of the Commencement Date in accordance with the percentage change in the Consumer Price Index",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "escalation_type",
+        "grounded": true
+      },
+      "escalation_pct": {
+        "value": "unknown",
+        "quote_text": "",
+        "quote_page": null,
+        "confidence": 1,
+        "key": "escalation_pct",
+        "grounded": null
+      },
+      "escalation_date": {
+        "value": "unknown",
+        "quote_text": "",
+        "quote_page": null,
+        "confidence": 1,
+        "key": "escalation_date",
+        "grounded": null
+      },
+      "escalation_new_rent": {
+        "value": "unknown",
+        "quote_text": "",
+        "quote_page": null,
+        "confidence": 1,
+        "key": "escalation_new_rent",
+        "grounded": null
+      },
+      "late_fee_amount": {
+        "value": "45",
+        "quote_text": "late charge of $45.00",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "late_fee_amount",
+        "grounded": true
+      },
+      "late_fee_pct": {
+        "value": "unknown",
+        "quote_text": "",
+        "quote_page": null,
+        "confidence": 1,
+        "key": "late_fee_pct",
+        "grounded": null
+      },
+      "late_grace_days": {
+        "value": "5",
+        "quote_text": "by 5 day(s) after its due date",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "late_grace_days",
+        "grounded": true
+      },
+      "landlord_name": {
+        "value": "Hollis Template",
+        "quote_text": "Landlord: Hollis Template, hollis@example.org.",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "landlord_name",
+        "grounded": true
+      },
+      "tenant_name": {
+        "value": "Jamie Testwell",
+        "quote_text": "Tenant: Jamie Testwell, jamie@example.org.",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "tenant_name",
+        "grounded": true
+      }
+    },
+    "deadlines": [
+      {
+        "type": "term_end",
+        "date": "2028-06-30",
+        "needs_review": false
+      },
+      {
+        "type": "notice",
+        "date": "2028-04-01",
+        "needs_review": false
+      },
+      {
+        "type": "escalation",
+        "date": null,
+        "needs_review": true,
+        "reason": "Escalation unquantified (CPI-indexed)"
+      },
+      {
+        "type": "deposit_return",
+        "date": "2028-07-30",
+        "needs_review": false
+      }
+    ],
+    "validation": [],
+    "usage": {
+      "queue_time": 0.014048923,
+      "prompt_tokens": 2288,
+      "prompt_time": 0.106484787,
+      "completion_tokens": 1454,
+      "completion_time": 3.108520637,
+      "total_tokens": 3742,
+      "total_time": 3.215005424,
+      "completion_tokens_details": {
+        "reasoning_tokens": 962
+      }
+    },
+    "model": "openai/gpt-oss-120b",
+    "latencyMs": 3483
+  },
+  "lease-11": {
+    "leaseId": "lease-11",
+    "fields": {
+      "term_start": {
+        "value": "2027-10-01",
+        "quote_text": "shall commence on October 1, 2027",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "term_start",
+        "grounded": true
+      },
+      "term_end": {
+        "value": "2028-09-30",
+        "quote_text": "shall continue through September 30, 2028",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "term_end",
+        "grounded": true
+      },
+      "monthly_rent": {
+        "value": "1725",
+        "quote_text": "monthly rent of $1,725.00",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "monthly_rent",
+        "grounded": true
+      },
+      "deposit": {
+        "value": "1725",
+        "quote_text": "the sum of $1,725.00 as security",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "deposit",
+        "grounded": true
+      },
+      "deposit_return_days": {
+        "value": "21",
+        "quote_text": "return the remaining Security Deposit to Tenant within 21 days after the end of the Term",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "deposit_return_days",
+        "grounded": true
+      },
+      "notice_days": {
+        "value": "30",
+        "quote_text": "not less than undefined (30) days prior to the expiration of the Term",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "notice_days",
+        "grounded": true
+      },
+      "escalation_type": {
+        "value": "anniversary",
+        "quote_text": "increase by three percent (3%) on each anniversary of the Commencement Date",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "escalation_type",
+        "grounded": true
+      },
+      "escalation_pct": {
+        "value": "3",
+        "quote_text": "increase by three percent (3%)",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "escalation_pct",
+        "grounded": true
+      },
+      "escalation_date": {
+        "value": "unknown",
+        "quote_text": "",
+        "quote_page": -1,
+        "confidence": 1,
+        "key": "escalation_date",
+        "grounded": null
+      },
+      "escalation_new_rent": {
+        "value": "unknown",
+        "quote_text": "",
+        "quote_page": -1,
+        "confidence": 1,
+        "key": "escalation_new_rent",
+        "grounded": null
+      },
+      "late_fee_amount": {
+        "value": "55",
+        "quote_text": "late charge of $55.00",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "late_fee_amount",
+        "grounded": true
+      },
+      "late_fee_pct": {
+        "value": "unknown",
+        "quote_text": "",
+        "quote_page": -1,
+        "confidence": 1,
+        "key": "late_fee_pct",
+        "grounded": null
+      },
+      "late_grace_days": {
+        "value": "3",
+        "quote_text": "If Landlord does not receive the full Rent by 3 day(s) after its due date",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "late_grace_days",
+        "grounded": true
+      },
+      "landlord_name": {
+        "value": "Rosa Mock",
+        "quote_text": "Landlord: Rosa Mock",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "landlord_name",
+        "grounded": true
+      },
+      "tenant_name": {
+        "value": "Alexa Fixture",
+        "quote_text": "Tenant: Alexa Fixture",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "tenant_name",
+        "grounded": true
+      }
+    },
+    "deadlines": [
+      {
+        "type": "term_end",
+        "date": "2028-09-30",
+        "needs_review": false
+      },
+      {
+        "type": "notice",
+        "date": "2028-08-31",
+        "needs_review": false
+      },
+      {
+        "type": "deposit_return",
+        "date": "2028-10-21",
+        "needs_review": false
+      }
+    ],
+    "validation": [],
+    "usage": {
+      "queue_time": 0.257291809,
+      "prompt_tokens": 2259,
+      "prompt_time": 0.178362707,
+      "completion_tokens": 1285,
+      "completion_time": 2.727390287,
+      "total_tokens": 3544,
+      "total_time": 2.905752994,
+      "completion_tokens_details": {
+        "reasoning_tokens": 776
+      }
+    },
+    "model": "openai/gpt-oss-120b",
+    "latencyMs": 3245
+  },
+  "lease-12": {
+    "leaseId": "lease-12",
+    "fields": {
+      "term_start": {
+        "value": "2027-11-01",
+        "quote_text": "The term of this lease (the \"Term\") shall commence on November 1, 2027 and shall continue through October 31, 2028, unless earlier terminated or extended in accordance with this Agreement.",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "term_start",
+        "grounded": true
+      },
+      "term_end": {
+        "value": "2028-10-31",
+        "quote_text": "The term of this lease (the \"Term\") shall commence on November 1, 2027 and shall continue through October 31, 2028, unless earlier terminated or extended in accordance with this Agreement.",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "term_end",
+        "grounded": true
+      },
+      "monthly_rent": {
+        "value": "1875",
+        "quote_text": "Tenant shall pay monthly rent of $1,875.00 (the \"Rent\"), due in advance on the first (1st) day of each calendar month during the Term, without demand or deduction.",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "monthly_rent",
+        "grounded": true
+      },
+      "deposit": {
+        "value": "1875",
+        "quote_text": "Upon execution of this Agreement, Tenant shall deposit with Landlord the sum of $1,875.00 as security for Tenant's faithful performance of this Agreement (the \"Security Deposit\").",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "deposit",
+        "grounded": true
+      },
+      "deposit_return_days": {
+        "value": "14",
+        "quote_text": "Landlord shall return the remaining Security Deposit to Tenant within 14 days after the end of the Term, together with an itemized statement of any deductions as required by applicable law.",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "deposit_return_days",
+        "grounded": true
+      },
+      "notice_days": {
+        "value": "60",
+        "quote_text": "If Tenant desires to renew or extend this lease for a new term, Tenant shall give Landlord written notice of such intent not less than undefined (60) days prior to the expiration of the Term.",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "notice_days",
+        "grounded": true
+      },
+      "escalation_type": {
+        "value": "fixed",
+        "quote_text": "Beginning on May 1, 2028, the monthly Rent shall increase to $1,941.00.",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "escalation_type",
+        "grounded": true
+      },
+      "escalation_pct": {
+        "value": "unknown",
+        "quote_text": "",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "escalation_pct",
+        "grounded": null
+      },
+      "escalation_date": {
+        "value": "2028-05-01",
+        "quote_text": "Beginning on May 1, 2028, the monthly Rent shall increase to $1,941.00.",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "escalation_date",
+        "grounded": true
+      },
+      "escalation_new_rent": {
+        "value": "1941",
+        "quote_text": "Beginning on May 1, 2028, the monthly Rent shall increase to $1,941.00.",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "escalation_new_rent",
+        "grounded": true
+      },
+      "late_fee_amount": {
+        "value": "65",
+        "quote_text": "If Landlord does not receive the full Rent by 5 day(s) after its due date, Tenant shall pay a late charge of $65.00.",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "late_fee_amount",
+        "grounded": true
+      },
+      "late_fee_pct": {
+        "value": "unknown",
+        "quote_text": "",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "late_fee_pct",
+        "grounded": null
+      },
+      "late_grace_days": {
+        "value": "5",
+        "quote_text": "If Landlord does not receive the full Rent by 5 day(s) after its due date, Tenant shall pay a late charge of $65.00.",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "late_grace_days",
+        "grounded": true
+      },
+      "landlord_name": {
+        "value": "Fenwick Draft",
+        "quote_text": "Landlord: Fenwick Draft, fenwick@example.org.",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "landlord_name",
+        "grounded": true
+      },
+      "tenant_name": {
+        "value": "Sam Stagedata",
+        "quote_text": "Tenant: Sam Stagedata, sam@example.org.",
+        "quote_page": 0,
+        "confidence": 1,
+        "key": "tenant_name",
+        "grounded": true
+      }
+    },
+    "deadlines": [
+      {
+        "type": "term_end",
+        "date": "2028-10-31",
+        "needs_review": false
+      },
+      {
+        "type": "notice",
+        "date": "2028-09-01",
+        "needs_review": false
+      },
+      {
+        "type": "escalation",
+        "date": "2028-05-01",
+        "needs_review": false
+      },
+      {
+        "type": "deposit_return",
+        "date": "2028-11-14",
+        "needs_review": false
+      }
+    ],
+    "validation": [],
+    "usage": {
+      "queue_time": 0.400595385,
+      "prompt_tokens": 2264,
+      "prompt_time": 0.198351129,
+      "completion_tokens": 1886,
+      "completion_time": 3.977346438,
+      "total_tokens": 4150,
+      "total_time": 4.175697567,
+      "completion_tokens_details": {
+        "reasoning_tokens": 1115
+      }
+    },
+    "model": "openai/gpt-oss-120b",
+    "latencyMs": 5499
+  }
+}

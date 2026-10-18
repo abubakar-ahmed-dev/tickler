@@ -1,0 +1,128 @@
+# Tickler on Render — one blueprint, whole stack.
+# App + worker + FalkorDB (private service, persistent disk) + Temporal
+# (auto-setup, Postgres-backed). Create from the Render dashboard with
+# "Blueprint" pointing at this repo, or the Deploy to Render button.
+#
+# Secrets marked `sync: false` are requested once at creation time.
+
+services:
+  # ---------- graph database: FalkorDB on a persistent disk ----------
+  - type: pserv
+    name: tickler-falkordb
+    runtime: image
+    image:
+      url: docker.io/falkordb/falkordb:latest
+    plan: starter
+    disk:
+      name: tickler-graph
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      # set the same value you give FALKORDB_PASSWORD on web + worker
+      # (or delete this var on all three services to run without a password
+      #  inside the private network)
+      - key: REDIS_ARGS
+        sync: false
+
+  # ---------- durable timers: Temporal server over Render Postgres ----------
+  - type: pserv
+    name: tickler-temporal
+    runtime: image
+    image:
+      url: docker.io/temporalio/auto-setup:1.25
+    plan: starter
+    envVars:
+      - key: DB
+        value: postgresql12
+      - key: DB_PORT
+        value: "5432"
+      - key: POSTGRES_SEEDS
+        fromDatabase:
+          name: tickler-temporal-db
+          property: host
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: tickler-temporal-db
+          property: user
+      - key: POSTGRES_PWD
+        fromDatabase:
+          name: tickler-temporal-db
+          property: password
+
+  # ---------- the app ----------
+  - type: web
+    name: tickler-web
+    runtime: node
+    plan: starter
+    buildCommand: npm ci && cd web && npm ci && npm run build
+    startCommand: cd web && npm run start
+    healthCheckPath: /
+    disk:
+      name: tickler-uploads
+      mountPath: /data/uploads
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: 22.16.0
+      - key: UPLOAD_DIR
+        value: /data/uploads
+      - key: FALKORDB_HOST
+        fromService:
+          type: pserv
+          name: tickler-falkordb
+          property: host
+      - key: FALKORDB_PORT
+        fromService:
+          type: pserv
+          name: tickler-falkordb
+          property: port
+      - key: FALKORDB_PASSWORD
+        sync: false
+      - key: TEMPORAL_ADDRESS
+        value: tickler-temporal:7233
+      - key: GROQ_API_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: ALERT_EMAIL_FROM
+        sync: false
+      - key: APP_URL
+        sync: false
+
+  # ---------- reminder runner ----------
+  - type: worker
+    name: tickler-worker
+    runtime: node
+    plan: starter
+    buildCommand: npm ci
+    startCommand: node worker/worker.mjs
+    envVars:
+      - key: NODE_VERSION
+        value: 22.16.0
+      - key: FALKORDB_HOST
+        fromService:
+          type: pserv
+          name: tickler-falkordb
+          property: host
+      - key: FALKORDB_PORT
+        fromService:
+          type: pserv
+          name: tickler-falkordb
+          property: port
+      - key: FALKORDB_PASSWORD
+        sync: false
+      - key: TEMPORAL_ADDRESS
+        value: tickler-temporal:7233
+      - key: GROQ_API_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: ALERT_EMAIL_FROM
+        sync: false
+
+databases:
+  # Temporal's persistence layer (not Tickler data — the graph is the only
+  # Tickler datastore, by design)
+  - name: tickler-temporal-db
+    databaseName: temporal
+    plan: basic-256mb

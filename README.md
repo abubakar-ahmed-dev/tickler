@@ -55,7 +55,7 @@ node worker/hello-client.mjs       # durable hello-timer (~5s)
 
 ## Status
 
-Work in progress — ingestion and extraction phases building now. See `docs/` for the model as it lands.
+Working product: upload → grounded extraction (100% field and deadline accuracy on a 12-lease synthetic corpus, 9 dev + 3 sealed hold-out) → durable reminders → cited answers. Limits we own: accuracy is measured on synthetic leases with regular prose — real attorney-drafted leases are the next frontier; text-layer PDFs only; a human approves every abstract and every letter.
 
 ## Running the app
 
