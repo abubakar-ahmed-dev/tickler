@@ -6,7 +6,7 @@ import { join } from "node:path";
 
 export const runtime = "nodejs";
 
-const TMP = join(process.cwd(), "..", "tmp-uploads");
+const TMP = process.env.UPLOAD_DIR ?? join(process.cwd(), "..", "tmp-uploads");
 const CORPUS = join(process.cwd(), "..", "corpus", "pdfs");
 const HOLDOUT = join(process.cwd(), "..", "eval", "holdout", "pdfs");
 

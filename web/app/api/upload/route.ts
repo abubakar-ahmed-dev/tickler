@@ -7,7 +7,9 @@ import { ingestLease } from "../../../../pipeline/ingest.mjs";
 export const runtime = "nodejs";
 export const maxDuration = 120;
 
-const TMP = join(process.cwd(), "..", "tmp-uploads");
+// lease PDFs live on one store: UPLOAD_DIR (a mounted disk in production),
+// falling back to the local dev folder
+const TMP = process.env.UPLOAD_DIR ?? join(process.cwd(), "..", "tmp-uploads");
 
 export async function POST(req: Request) {
   const form = await req.formData();
