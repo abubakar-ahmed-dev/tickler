@@ -8,6 +8,7 @@ export const runtime = "nodejs";
 
 const TMP = join(process.cwd(), "..", "tmp-uploads");
 const CORPUS = join(process.cwd(), "..", "corpus", "pdfs");
+const HOLDOUT = join(process.cwd(), "..", "eval", "holdout", "pdfs");
 
 export async function GET(req: Request) {
   const leaseId = new URL(req.url).searchParams.get("leaseId") ?? "";
@@ -21,6 +22,7 @@ export async function GET(req: Request) {
     join(TMP, `${leaseId}.pdf`),
     join(TMP, `${bare}.pdf`),
     join(CORPUS, `${leaseId}.pdf`),
+    join(HOLDOUT, `${leaseId}.pdf`),
   ];
   const hit = candidates.find(existsSync);
   if (!hit) {
