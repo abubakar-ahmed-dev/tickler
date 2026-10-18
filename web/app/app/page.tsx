@@ -18,7 +18,7 @@ type ChainStep = { step: string; detail: string };
 type ChatMsg = { who: "you" | "bot" | "system"; text: string; tools?: string[]; citations?: Citation[] };
 type Field = { clause: string; key: string; value: string; confidence: number; approved: boolean; corrected: boolean; quote: string | null; page: number | null };
 type Deadline = { type: string; date: string; needsReview: boolean; reason: string; reminders: string[] };
-type Alert = { alertId: number; action: string; level: string; message: string; reason: string; at: string; emailed?: boolean; draftId: number | null; draftStatus: string | null };
+type Alert = { alertId: number; action: string; level: string; message: string; reason: string; at: string; emailed?: boolean; draftId: number | null; draftStatus: string | null; draftBody?: string | null };
 type LeaseState = { lease: { id: string; title: string; status: string; extractClean: boolean }; fields: Field[]; deadlines: Deadline[]; alerts: Alert[] };
 type Tab = "chat" | "review" | "deadlines" | "alerts";
 
@@ -47,6 +47,13 @@ const firstPage = (c: Citation): number | null => {
   return null;
 };
 const stripPage = (d: string) => d.replace(/\s*\(page \d+\)\s*$/i, "");
+// days from today until a YYYY-MM-DD deadline (null when the date is unknown)
+const daysOut = (date: string): number | null => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+  return Math.round((new Date(date + "T12:00:00").getTime() - Date.now()) / 86400000);
+};
+const dueLabel = (n: number) =>
+  n === 0 ? "due today" : n > 0 ? `in ${n} day${n === 1 ? "" : "s"}` : `${-n} day${n === -1 ? "" : "s"} overdue`;
 
 function MiniBell() {
   return (
@@ -261,6 +268,7 @@ export default function App() {
     refreshState(leaseId); refreshLeases();
   };
 
+  const [copiedId, setCopiedId] = useState<number | null>(null);
   const decideDraft = async (draftId: number, action: "approve" | "discard") => {
     await fetch("/api/drafts", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ draftId, action }) });
     say(action === "approve" ? "Letter approved, ready to send." : "Letter thrown away.");
@@ -640,25 +648,37 @@ export default function App() {
             ) : (
               <div className="scroller">
                 {state?.deadlines.length === 0 && <div className="empty"><CalendarClock size={26} /><p>no deadlines yet, check the details first</p></div>}
-                {state?.deadlines.map((d, i) => (
-                  <div className="deadlinecard" key={d.type + d.date}>
-                    <span className="cardnum" title={`Deadline ${i + 1} of ${state.deadlines.length}`}>{i + 1}</span>
-                    <div className="dl-left">
-                      <span className="dl-type">{d.type.replace(/_/g, " ")}</span>
-                      <b className={d.date === "unknown" ? "dim" : ""}>{d.date === "unknown" ? "date unknown" : d.date}</b>
-                      {d.needsReview && d.reason && <span className="dl-reason">{d.reason}</span>}
+                {state?.deadlines.map((d, i) => {
+                  const days = daysOut(d.date);
+                  return (
+                    <div className="deadlinecard" key={d.type + d.date}>
+                      <span className="cardnum" title={`Deadline ${i + 1} of ${state.deadlines.length}`}>{i + 1}</span>
+                      <div className="dl-left">
+                        <span className="dl-type">{d.type.replace(/_/g, " ")}</span>
+                        <b className={d.date === "unknown" ? "dim" : ""}>
+                          {d.date === "unknown" ? "date unknown" : d.date}
+                          {days != null && <span className={`due ${days < 0 ? "bad" : ""}`}>{dueLabel(days)}</span>}
+                        </b>
+                        {d.needsReview && d.reason && <span className="dl-reason">{d.reason}</span>}
+                      </div>
+                      <div className="dl-right">
+                        {d.needsReview
+                          ? <span className="badge bad">needs your review</span>
+                          : d.reminders.filter(Boolean).length > 0
+                            ? <span className="badge ok">{d.reminders.filter(Boolean).length} reminders on</span>
+                            : state.lease?.status === "armed"
+                              ? <span className="badge">on</span>
+                              : <span className="badge">reminders off</span>}
+                      </div>
+                      {d.needsReview && (
+                        <div className="dlnote">
+                          <p>Tickler could not pin this date down from the lease. The fix lives in your details: correct the missing value, approve, and this deadline gets computed.</p>
+                          <button className="btn ghost" onClick={() => setTab("review")}>Open Check details <ArrowRight size={13} /></button>
+                        </div>
+                      )}
                     </div>
-                    <div className="dl-right">
-                      {d.needsReview
-                        ? <span className="badge bad">needs your review</span>
-                        : d.reminders.filter(Boolean).length > 0
-                          ? <span className="badge ok">{d.reminders.filter(Boolean).length} reminders on</span>
-                          : state.lease?.status === "armed"
-                            ? <span className="badge">on</span>
-                            : <span className="badge">reminders off</span>}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </section>
@@ -708,6 +728,17 @@ export default function App() {
                     </div>
                     <p className="amsg">{a.message}</p>
                     {a.reason && <p className="areason">why: {a.reason}</p>}
+                    {a.draftId && a.draftBody && (
+                      <div className="letterbox">
+                        <span className="letterlabel">Draft letter, written from the lease quotes</span>
+                        <pre>{a.draftBody}</pre>
+                        <button className="btn ghost" onClick={() => {
+                          navigator.clipboard?.writeText(a.draftBody!);
+                          setCopiedId(a.alertId);
+                          setTimeout(() => setCopiedId(null), 2500);
+                        }}>{copiedId === a.alertId ? "Copied ✓" : "Copy letter text"}</button>
+                      </div>
+                    )}
                     {a.draftId && a.draftStatus === "pending" && (
                       <div className="draftrow">
                         <span className="badge warn">letter waiting, your call</span>
@@ -715,7 +746,12 @@ export default function App() {
                         <button className="btn ghost" onClick={() => decideDraft(a.draftId!, "discard")}>Discard</button>
                       </div>
                     )}
-                    {a.draftStatus && a.draftStatus !== "pending" && <p className="areason">letter {a.draftStatus}</p>}
+                    {a.draftStatus === "approved" && (
+                      <p className="areason ok">You approved this letter. Tickler never sends anything by itself. Copy the text above and send it to your tenant or landlord.</p>
+                    )}
+                    {a.draftStatus === "discarded" && (
+                      <p className="areason">You discarded this letter. Nothing was sent, and Tickler will not ask again about this reminder.</p>
+                    )}
                   </div>
                 ))}
               </div>
