@@ -492,3 +492,6 @@ input[type=radio] { accent-color: var(--accent); }
 .fsbtn { display: inline-flex; align-items: center; gap: 7px; padding: 7px 13px; font-size: 12px; font-weight: 600; color: var(--text); background: var(--chip); border: 1px solid var(--line); border-radius: 8px; cursor: pointer; transition: border-color .15s, color .15s; }
 .fsbtn:hover { border-color: var(--accent); color: var(--accent); }
 .fsbtn svg { color: var(--accent); }
+
+/* breathing room for the corner number markers — they hang ~11px above each card */
+.scroller { gap: 26px; }
