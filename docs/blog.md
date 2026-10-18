@@ -36,6 +36,8 @@ flowchart LR
 4. **Forget about it.** Approving arms Temporal workflows: 90, 30, and 7 days before each deadline, a reminder fires no matter what. Kill the process mid-wait, restart the machine, the timer still fires. That durability is the point of the product.
 5. **Agents take the night shift.** When a reminder fires, a Watcher agent decides: notify, snooze, or escalate. Escalating hands off to a Drafter agent that writes the notice letter grounded only in the lease's own quotes. Drafts are born pending and are sent only if you approve. Alerts also land in your inbox by email.
 
+![The alerts tab: an urgent alert with the draft letter written from the lease quotes, waiting for the human's call](images/alerts.png)
+
 ![The Tickler dashboard: chatting with a lease, every answer cited](images/dashboard-chat.png)
 
 ## Why a graph
@@ -100,6 +102,8 @@ Extraction results: **99 of 99 fields and every deadline correct on the dev set,
 ## Timers that survive crashes
 
 A deadline product that can forget is worse than no product at all, so reminders are Temporal workflows, not cron jobs: three durable timer chains per deadline (90, 30, and 7 days out), each firing an activity that runs the Watcher agent. We demo this by literally killing the worker process mid-wait and restarting it. The reminders still land, because Temporal's event history, not our process memory, is the source of truth for what has been scheduled.
+
+![The deadlines tab: every date with its countdown and reminders running](images/deadline.png)
 
 The graph holds *what* matters. Temporal holds *when*. Neither is allowed to be the other's problem.
 
