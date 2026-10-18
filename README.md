@@ -23,6 +23,12 @@ lease PDF ──► ingestion ──► FalkorDB graph ◄── Concierge agent
 - **Durable timers** — reminders are Temporal workflows. Kill the process mid-wait, restart it, the timer still fires. "The deadline machine forgot" is the failure this exists to prevent.
 - **Human in the loop** — extraction review before deadlines arm; drafts are born pending and only a human approves them.
 
+## Try it live
+
+Tickler runs in production on Render: **<https://tickler-web.onrender.com>**
+
+Load a sample lease, check the extracted details against the source PDF (every sentence opens the document with the quote highlighted), approve, and the durable reminder chains arm themselves — the first alert arrives in about 24 seconds in demo mode, email included. Or deploy your own copy with the one-click blueprint at the bottom of this page.
+
 ## Stack
 
 Next.js (UI) · OpenAI-compatible tool loop + MCP server (the Concierge agent) · FalkorDB (graph) · Temporal (durable workflows) · Groq serving open-weight models (`openai/gpt-oss-20b`, `openai/gpt-oss-120b` — Apache 2.0).
@@ -55,9 +61,9 @@ node worker/hello-client.mjs       # durable hello-timer (~5s)
 
 ## Status
 
-Working product: upload → grounded extraction (100% field and deadline accuracy on a 12-lease synthetic corpus, 9 dev + 3 sealed hold-out) → durable reminders → cited answers. Limits we own: accuracy is measured on synthetic leases with regular prose — real attorney-drafted leases are the next frontier; text-layer PDFs only; a human approves every abstract and every letter.
+Deployed and working end to end: upload → grounded extraction (100% field and deadline accuracy on a 12-lease synthetic corpus, 9 dev + 3 sealed hold-out) → durable reminders → cited answers with PDF evidence → alerts and drafted letters, in production on Render. Limits we own: accuracy is measured on synthetic leases with regular prose — real attorney-drafted leases are the next frontier; text-layer PDFs only; a human approves every abstract and every letter.
 
-## Running the app
+## Running the app locally
 
 ```bash
 # prerequisites: FalkorDB container + Temporal dev server running (see setup above)
